@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import './bids.css'
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { Link } from 'react-router-dom';
-import bids5 from '../../assets/bids5.png'
+
 
 const Bids = ({ items = [] }) => {
 
@@ -42,21 +42,7 @@ const Bids = ({ items = [] }) => {
             ))}
 
             {/* Static card */}
-            <div className="card-column">
-              <div className="bids-card">
-                <div className="bids-card-top">
-                  <img src={bids5} alt="White Line Grafiti" />
-                  <Link to="/post/123">
-                    <p className="bids-title">White Line Grafiti</p>
-                  </Link>
-                </div>
-                <div className="bids-card-bottom">
-                  <p>0.09 <span>ETH</span></p>
-                  <p><AiFillHeart /> 22</p>
-                </div>
-              </div>
-            </div>
-
+           
           </div>
         ) : (
           <main style={{ padding: "1rem 0" }}>

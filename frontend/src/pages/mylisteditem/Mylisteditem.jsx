@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ethers } from 'ethers'
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import './Mylisteditem.css'
 import { Row, Col, Card } from 'react-bootstrap'
 
 function renderSoldItems(items) {
@@ -73,28 +75,85 @@ export default function MyListedItems({ marketplace, nft, account }) {
   )
 
   return (
-    <div className="flex justify-center">
-      {listedItems.length > 0 ?
-        <div className="px-5 py-3 container">
-            <h2>Listed</h2>
-          <Row xs={1} md={2} lg={4} className="g-4 py-3">
-            {listedItems.map((item, idx) => (
-              <Col key={idx} className="overflow-hidden">
-                <Card>
-                  <Card.Img variant="top" src={item.image} />
-                  <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-            {soldItems.length > 0 && renderSoldItems(soldItems)}
+
+    <div className='bids section__padding'>
+          <div className="bids-container">
+            <div className="bids-container-text">
+              <h1>MY ITEMS</h1>
+            </div>
+    
+            {listedItems.length > 0 ? (
+              <div className="bids-container-card">
+                {listedItems.map((item) => (
+                  <div className="card-column" key={item.itemId.toString()}>
+                    <div className="bids-card">
+                      <div className="bids-card-top">
+                        <img src={item.image} alt={item.name} />
+                          <p >
+                            {item.name}
+                          </p>
+                      </div>
+                      <div className="bids-card-bottom">
+                        <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
+                        <p><AiFillHeart /> 92</p>
+                      </div>
+                    </div>
+                    <div className="bid-like">
+                      <AiOutlineHeart />
+                    </div>
+                  </div>
+                ))}
+    
+                {/* Static card */}
+               
+              </div>
+            ) : (
+              <main style={{ padding: "1rem 0" }}>
+                <h2>No listed assets</h2>
+              </main>
+            )}
+          </div>
+          <div className="bids-container">
+            <div className="bids-container-text">
+              <h1>MY SOLD ITEMS</h1>
+            </div>
+    
+            {soldItems.length > 0 ? (
+              <div className="bids-container-card">
+                {soldItems.map((item) => (
+                  <div className="card-column" key={item.itemId.toString()}>
+                    <div className="bids-card">
+                      <div className="bids-card-top">
+                        <img src={item.image} alt={item.name} />
+                          <p >
+                            {item.name}
+                          </p>
+                      </div>
+                      <div className="bids-card-bottom">
+                        <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
+                        <p><AiFillHeart /> 92</p>
+                      </div>
+                    </div>
+                    <div className="bid-like">
+                      <AiOutlineHeart />
+                    </div>
+                  </div>
+                ))}
+    
+                {/* Static card */}
+               
+              </div>
+            ) : (
+              <main style={{ padding: "1rem 0" }}>
+                <h2>No Sold listed assets</h2>
+              </main>
+            )}
+          </div>
+    
+          <div className="load-more">
+            <button>Load More</button>
+          </div>
         </div>
-        : (
-          <main style={{ padding: "1rem 0" }}>
-            <h2>No listed assets</h2>
-          </main>
-        )}
-    </div>
   );
 
 }

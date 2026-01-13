@@ -174,7 +174,7 @@ const web3Handler = async () => {
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/login" element={ <Login />} />
             <Route path="/register" element={ <Register />} />
-            {/* <Route path="/mylisteditem" element={ <Mylisteditem marketplace={marketplace} nft={nft}/>} /> */}
+            <Route path="/mylisteditem" element={ <Mylisteditem marketplace={marketplace} nft={nft} account={account}/>} />
           </Routes>
           )}
       </div>
