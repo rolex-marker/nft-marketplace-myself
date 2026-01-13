@@ -59,3 +59,6 @@ const Bids = ({ items = [] }) => {
 };
 
 export default Bids;
+
+
+ 

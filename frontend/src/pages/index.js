@@ -5,3 +5,4 @@ export {default as Create} from './create/Create';
 export {default as Login} from './login/Login';
 export {default as Register} from './register/Register';
 export {default as Mylisteditem} from './mylisteditem/Mylisteditem';
+export {default as PurchasedItem} from './purchasedItem/PurchasedItem';

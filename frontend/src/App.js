@@ -4,7 +4,7 @@ import { Spinner } from 'react-bootstrap';
 
 import './App.css';
 import {Navbar,Footer} from './components'
-import {Home,Profile,Item, Create,Login,Register,Mylisteditem} from './pages'
+import {Home, Profile, Item, Create, Login, Register, Mylisteditem, PurchasedItem} from './pages'
 import { Routes, Route } from "react-router-dom";
 
 import MarketplaceAbi from './contractsData/Marketplace.json';
@@ -175,6 +175,7 @@ const web3Handler = async () => {
             <Route path="/login" element={ <Login />} />
             <Route path="/register" element={ <Register />} />
             <Route path="/mylisteditem" element={ <Mylisteditem marketplace={marketplace} nft={nft} account={account}/>} />
+            <Route path="/purchasedItem" element={ <PurchasedItem marketplace={marketplace} nft={nft} account={account}/>} />
           </Routes>
           )}
       </div>

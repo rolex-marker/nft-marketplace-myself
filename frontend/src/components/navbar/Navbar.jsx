@@ -8,6 +8,7 @@ const Menu = () => (
   <>
      <Link to="/"><p>Explore</p> </Link>
      <Link to="/mylisteditem"><p>My Items</p> </Link>
+     <Link to="/purchasedItem"><p>My purchasedItems</p> </Link>
   </>
  )
 
@@ -56,9 +57,6 @@ const Menu = () => (
 
        {account ? (
               <>
-              <Link to=""> 
-               <button  type='button' className='secondary-btn'>Disconnect Wallet</button>
-               </Link>
                <Link to="/create"> 
                <button type='button' className='primary-btn' >Create</button>
                </Link>
