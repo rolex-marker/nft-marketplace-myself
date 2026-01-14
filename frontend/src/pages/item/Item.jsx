@@ -13,18 +13,21 @@ const Item = ({marketplace, nft}) => {
     const [item, setItem] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const phurchase = async(itemId, totalPrice) => {
+    const phurchase = async(itemId) => {
       if (isSubmitting) return
 
+      const totalPrice = await marketplace.getTotalPrice(item.itemId);
       setIsSubmitting(true)
       try{
         await (await marketplace.purchaseItem(itemId, {
               value: totalPrice,
             })).wait()
+            
             alert("NFT Buy successfully 🎉")
       } catch(err) {
        console.error(err)
       } finally {
+        
       setIsSubmitting(false)
       }
     }
@@ -86,7 +89,7 @@ return (
       <div className="item-content-buy">
         <button
           onClick={() =>
-            phurchase(item.itemId, item.totalPrice)
+            phurchase(item.itemId)
           }
           className="primary-btn"
         >

@@ -55,6 +55,7 @@ const [image, setImage] = useState('')
 
   // Upload metadata to Pinata
   const createNFT = async () => {
+    
 
     if (isSubmitting) return
 
@@ -97,8 +98,10 @@ const [image, setImage] = useState('')
 
   // Mint NFT and list on marketplace
   const mintThenList = async (uri) => {
-    await (await nft.mint(uri)).wait()
+    const tx1 = await nft.mint(uri);
+    await tx1.wait();
     const id = await nft.tokenCount()
+    console.log("created NFTID:",id);
     await (await nft.setApprovalForAll(marketplace.address, true)).wait()
     const listingPrice = ethers.utils.parseEther(price.toString())
     await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()

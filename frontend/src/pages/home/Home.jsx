@@ -5,11 +5,6 @@ import {Bids, Header, } from '../../components';
 
 const Home = ({ marketplace, nft }) => {
 
-  
-
-  console.log(marketplace);
-  console.log(nft);
-
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
   const loadMarketplaceItems = useCallback(async () => {
@@ -18,7 +13,7 @@ const Home = ({ marketplace, nft }) => {
     
     let items = []
     for (let i = 1; i <= itemCount; i++) {
-      console.log(itemCount);
+      
       const item = await marketplace.items(i)
       if (!item.sold) {
         // get uri url from nft contract
@@ -44,10 +39,7 @@ const Home = ({ marketplace, nft }) => {
     console.log(items)
   }, [marketplace, nft])
 
-  const buyMarketItem = async (item) => {
-    await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
-    loadMarketplaceItems()
-  }
+  
 
   useEffect(() => {
     loadMarketplaceItems()
@@ -61,7 +53,7 @@ const Home = ({ marketplace, nft }) => {
   return (
     <div>
    <Header />
-   <Bids items={items} buyMarketItem={buyMarketItem}  />
+   <Bids items={items}  />
   </div>
   );
 };

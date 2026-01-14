@@ -85,12 +85,13 @@ const web3Handler = async () => {
 };
   const loadContracts = async (signer) => {
     // Get deployed copies of contracts
+    console.log("abi is correct", MarketplaceAbi.abi.map(f => f.name));
     const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer)
     console.log(marketplace);
-    setMarketplace(marketplace)
+    setMarketplace(marketplace);
     const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer)
     console.log(nft);
-    setNFT(nft)
+    setNFT(nft);
     setLoading(false)
   }
 
@@ -114,7 +115,7 @@ const web3Handler = async () => {
             <Route path="/register" element={ <Register />} />
             <Route path="/mylisteditem" element={ <Mylisteditem marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/purchasedItem" element={ <PurchasedItem marketplace={marketplace} nft={nft} account={account}/>} />
-            <Route path="/marketing/:id" element={ <Marketing marketplace={marketplace} nft={nft}/>} />
+            <Route path="/marketing/:id/:tokenId" element={ <Marketing marketplace={marketplace} nft={nft}/>} />
           </Routes>
           )}
       </div>
