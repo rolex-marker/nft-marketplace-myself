@@ -10,20 +10,31 @@ export default function MyPurchases({ marketplace, nft, account }) {
 
     const loadPurchasedItems =  useCallback(async () => {
         
-        const filter = marketplace.filters.Bought(null, null, null, null, null, account);
-        const results = await marketplace.queryFilter(filter)
+        // const filter = marketplace.filters.Bought(null, null, null, null, null, account);
+        // const results = await marketplace.queryFilter(filter)
+        const events = await marketplace.queryFilter("Bought");
+        const results = events.filter(e => e.args.buyer.toLowerCase() === account.toLowerCase());
 
         const purchases = await Promise.all(results.map(async i => {
             i = i.args;
             const uri = await nft.tokenURI(i.tokenId);
             const response = await fetch(uri);
             const metadata = await response.json();
-            const totalPrice = await marketplace.getTotalPrice(i.itemId);
+            console.log('purchases',metadata)
+
+            // const totalPrice = await marketplace.getTotalPrice(i.itemId);
+            let totalPrice;
+                try {
+                  totalPrice = await marketplace.getTotalPrice(i.itemId);
+                } catch {
+                  totalPrice = i.price;
+                }
 
             let purchasedItem = {
                 totalPrice,
                 price: i.price,
                 itemId: i.itemId,
+                tokenId: i.tokenId,
                 name: metadata.name,
                 description: metadata.description,
                 image: metadata.image
@@ -32,6 +43,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
         }))
         setLoading(false);
         setPurchases(purchases);
+        console.log('purchases',purchases)
     },[marketplace, nft, account]);
 
     useEffect(() => {
@@ -64,7 +76,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                            <div class="pur-price">
                             <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>
                             </div>
-                            <Link to={`/marketing/${item.itemId}`}>
+                            <Link to={`/marketing/${item.itemId}/${item.tokenId}`}>
                              <button class="pur-btn" >
                             <span>list</span>
                            <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

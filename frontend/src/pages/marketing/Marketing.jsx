@@ -7,27 +7,42 @@ import '../item/item.css';
 import '../create/create.css';
 
 export default function Marketing({ marketplace, nft }) {
-  const { id } = useParams();
+  const { id, tokenId } = useParams();
   const [loading, setLoading] = useState(true)
    const [item, setItem] = useState(null)
    const [price, setPrice] = useState(null)
    const [isSubmitting, setIsSubmitting] = useState(false)
 
-   const listAgain = async() => {
-    if (isSubmitting) return
+   const listAgain = async () => {
+  if (isSubmitting) return;
+  if (!price) return;
 
-     setIsSubmitting(true)
-     try{
-        if (!price) return
-   const listingPrice = ethers.utils.parseEther(price.toString())
-    await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()
-     alert("NFT Marketing successfully 🎉")
-    } catch (err) {
-    console.error(err)
+  setIsSubmitting(true);
+
+  try {
+    const listingPrice = ethers.utils.parseEther(price.toString());
+
+    // 🔑 APPROVE MARKETPLACE
+    const approvalTx = await nft.approve(marketplace.address, tokenId);
+    await approvalTx.wait();
+
+    // 🛒 LIST ITEM
+    const tx = await marketplace.makeItem(
+      nft.address,
+      tokenId,
+      listingPrice
+    );
+    await tx.wait();
+
+    alert("NFT listed successfully 🎉");
+  } catch (err) {
+    console.error(err);
+    alert("Listing failed");
   } finally {
-    setIsSubmitting(false)
+    setIsSubmitting(false);
   }
-   }
+};
+
   
     const loadItem = async () => {
       const itemData = await marketplace.items(id);

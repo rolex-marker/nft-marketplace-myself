@@ -42,10 +42,12 @@ contract Marketplace is ReentrancyGuard {
         address indexed buyer
     );
 
-    constructor(uint _feePercent) {
-        feeAccount = payable(msg.sender);
-        feePercent = _feePercent;
-    }
+    constructor(address _feeAccount, uint _feePercent) {
+    require(_feeAccount != address(0), "Invalid fee account");
+    feeAccount = payable(_feeAccount);
+    feePercent = _feePercent;
+}
+
 
     // Make item to offer on the marketplace
     function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
