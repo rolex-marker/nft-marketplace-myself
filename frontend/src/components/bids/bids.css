@@ -41,7 +41,7 @@
 .bids-card-top p{
   font-family: var(--font-family);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 21px;
   color: #FFFFFF;
   margin-top: 15px;
@@ -129,3 +129,44 @@ font-weight: normal;
  
 }
 
+
+.pur-btn{
+  background: var(--primary-btn);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:8px 15px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:.3s;
+  box-shadow:0 3px 10px rgba(0,0,0,.1)
+}
+
+.pur-btn:hover{
+  background:linear-gradient(45deg,#27272A,#3F3F46);
+  transform:translateY(-2px);
+  box-shadow:0 5px 15px rgba(0,0,0,.15)
+}
+.pur-btn:before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  transition:.5s
+}
+.pur-btn:hover:before{
+  left:100%
+}
+.pur-icon{
+  transition:transform .3s
+}
+.pur-btn:hover .pur-icon{
+  transform:rotate(-10deg) scale(1.1)
+}

@@ -3,8 +3,8 @@ import { ethers } from 'ethers';
 import { Spinner } from 'react-bootstrap';
 
 import './App.css';
-import {Navbar,Footer} from './components'
-import {Home, Profile, Item, Create, Login, Register, Mylisteditem, PurchasedItem} from './pages'
+import {Navbar,Footer, Loading} from './components'
+import {Home, Profile, Item, Create, Login, Register, Mylisteditem, PurchasedItem, Marketing} from './pages'
 import { Routes, Route } from "react-router-dom";
 
 import MarketplaceAbi from './contractsData/Marketplace.json';
@@ -20,73 +20,6 @@ function App() {
   const [nft, setNFT] = useState({});
   const [marketplace, setMarketplace] = useState({});
 
-//     const SEPOLIA_CHAIN_ID = "0xaa36a7" // 11155111
-
-// const web3Handler = async () => {
-//   if (!window.ethereum) {
-//     alert("MetaMask not detected")
-//     return
-//   }
-
-//   // Request account access
-//   const accounts = await window.ethereum.request({
-//     method: "eth_requestAccounts",
-//   })
-//   setAccount(accounts[0])
-
-//   // Ensure Sepolia network
-//   const currentChainId = await window.ethereum.request({
-//     method: "eth_chainId",
-//   })
-
-//   if (currentChainId !== SEPOLIA_CHAIN_ID) {
-//     try {
-//       await window.ethereum.request({
-//         method: "wallet_switchEthereumChain",
-//         params: [{ chainId: SEPOLIA_CHAIN_ID }],
-//       })
-//     } catch (switchError) {
-//       alert("Please switch MetaMask to Sepolia Testnet")
-//       return
-//     }
-//   }
-
-//   const provider = new ethers.providers.Web3Provider(window.ethereum)
-//   const signer = provider.getSigner()
-
-//   // Reload on network change
-//   window.ethereum.on("chainChanged", () => {
-//     window.location.reload()
-//   })
-
-//   // Reload on account change
-//   window.ethereum.on("accountsChanged", async (accounts) => {
-//     setAccount(accounts[0])
-//     await web3Handler()
-//   })
-
-//   loadContracts(signer)
-// }
-
-// const loadContracts = async (signer) => {
-//   // Marketplace contract (Sepolia deployed)
-//   const marketplace = new ethers.Contract(
-//     MarketplaceAddress.address,
-//     MarketplaceAbi.abi,
-//     signer
-//   )
-//   setMarketplace(marketplace)
-
-//   // NFT contract (Sepolia deployed)
-//   const nft = new ethers.Contract(
-//     NFTAddress.address,
-//     NFTAbi.abi,
-//     signer
-//   )
-//   setNFT(nft)
-
-//   setLoading(false)
-// }
 
 const HARDHAT_CHAIN_ID = "0x7A69"; // 31337 in hex
 
@@ -100,6 +33,7 @@ const web3Handler = async () => {
   const accounts = await window.ethereum.request({
     method: "eth_requestAccounts",
   });
+  console.log(accounts)
   setAccount(accounts[0]);
 
   // Get current chain
@@ -141,6 +75,7 @@ const web3Handler = async () => {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
+  console.log(signer);
 
   loadContracts(signer);
 
@@ -151,8 +86,10 @@ const web3Handler = async () => {
   const loadContracts = async (signer) => {
     // Get deployed copies of contracts
     const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer)
+    console.log(marketplace);
     setMarketplace(marketplace)
     const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer)
+    console.log(nft);
     setNFT(nft)
     setLoading(false)
   }
@@ -162,10 +99,11 @@ const web3Handler = async () => {
       <Navbar web3Handler={web3Handler} account={account}/>
       <div>
         {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-              <Spinner animation="border" style={{ display: 'flex' }} />
-              <p className='mx-3 my-0'>Awaiting Metamask Connection...</p>
-            </div>
+          <Loading />
+            // <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            //   <Spinner animation="border" style={{ display: 'flex' }} />
+            //   <p className='mx-3 my-0'>Awaiting Metamask Connection...</p>
+            // </div>
           ) : (
           <Routes>
             <Route path="/" element={<Home marketplace={marketplace} nft={nft}/>} />
@@ -176,6 +114,7 @@ const web3Handler = async () => {
             <Route path="/register" element={ <Register />} />
             <Route path="/mylisteditem" element={ <Mylisteditem marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/purchasedItem" element={ <PurchasedItem marketplace={marketplace} nft={nft} account={account}/>} />
+            <Route path="/marketing/:id" element={ <Marketing marketplace={marketplace} nft={nft}/>} />
           </Routes>
           )}
       </div>

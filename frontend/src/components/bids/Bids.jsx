@@ -24,15 +24,27 @@ const Bids = ({ items = [] }) => {
                 <div className="bids-card">
                   <div className="bids-card-top">
                     <img src={item.image} alt={item.name} />
-                    <Link to="/itemDetail">
-                      <p onClick={() => setItem(item.itemId)}>
+                    
+                      <p >
                         {item.name}
                       </p>
-                    </Link>
+                    
                   </div>
                   <div className="bids-card-bottom">
+                    
                     <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
+                    <Link to="/itemDetail">
+                     <button class="pur-btn" onClick={() => setItem(item.itemId)}>
+                            <span>BUY</span>
+                           <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                           <line x1="3" y1="6" x2="21" y2="6"/>
+                           <path d="M16 10a4 4 0 01-8 0"/>
+                           </svg>
+                      </button>
+                      </Link>
                     <p><AiFillHeart /> 92</p>
+                    
                   </div>
                 </div>
                 <div className="bid-like">
@@ -40,6 +52,8 @@ const Bids = ({ items = [] }) => {
                 </div>
               </div>
             ))}
+
+    
 
             {/* Static card */}
            

@@ -3,7 +3,7 @@ import { ethers } from "ethers"
 import axios from 'axios' // make HTTP requests to Pinata
 
 import './create.css'
-import Image from '../../assets/Image.png'
+
 
 // const PINATA_API_KEY = process.env.REACT_APP_PINATA_KEY
 // const PINATA_SECRET_API_KEY = process.env.REACT_APP_PINATA_SECRET
@@ -111,7 +111,7 @@ const [image, setImage] = useState('')
         <p className='upload-file'>Upload File</p>
         <div className="upload-img-show">
             <h3>JPG, PNG, GIF, SVG, WEBM, MP3, MP4. Max 100mb.</h3>
-            <img src={Image} alt="banner" />
+            <img src={image} alt="banner" />
             <p>Drag and Drop File</p>
         </div>
         <form className='writeForm' autoComplete='off'>

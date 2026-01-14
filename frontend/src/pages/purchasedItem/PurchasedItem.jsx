@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { Row, Col, Card } from "react-bootstrap";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import './purchasedItem1.css'
 import './purchasedItem.css'
+import { Link } from 'react-router-dom';
 
 export default function MyPurchases({ marketplace, nft, account }) {
     const [ loading, setLoading ] = useState(true);
     const [ purchases, setPurchases ] = useState([]);
+
     const loadPurchasedItems =  useCallback(async () => {
         
         const filter = marketplace.filters.Bought(null, null, null, null, null, account);
@@ -43,32 +44,42 @@ export default function MyPurchases({ marketplace, nft, account }) {
         </main>
     )
     return (
-    <div className='bids section__padding'>
-              <div className="bids-container">
-                <div className="bids-container-text">
+    <div className='pursha section__padding'>
+              <div className="pursha-container">
+                <div className="pursha-container-text">
                   <h1>MY Purchased Items</h1>
                 </div>
         
                 {purchases.length > 0 ? (
-                  <div className="bids-container-card">
+                  <div className="pursha-container-card">
                     {purchases.map((item) => (
-                      <div className="card-column" key={item.itemId.toString()}>
-                        <div className="bids-card">
-                          <div className="bids-card-top">
-                            <img src={item.image} alt={item.name} />
-                              <p >
-                                {item.name}
-                              </p>
-                          </div>
-                          <div className="bids-card-bottom">
-                            <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
-                            <p><AiFillHeart /> 92</p>
-                          </div>
-                        </div>
-                        <div className="bid-like">
-                          <AiOutlineHeart />
-                        </div>
-                      </div>
+                      <div class="pur-card" key={item.itemId.toString()}>
+                        <div class="pur-tilt">
+                         <div class="pur-img"><img src={item.image} alt="Premium Laptop" /></div>
+                         </div>
+                          <div class="pur-info">
+                          <h2 class="pur-title">{item.name}</h2>
+                           <p class="pur-desc">{item.description}</p>
+                             <div class="pur-bottom">
+                           <div class="pur-price">
+                            <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>
+                            </div>
+                            <Link to={`/marketing/${item.itemId}`}>
+                             <button class="pur-btn" >
+                            <span>list</span>
+                           <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                           <line x1="3" y1="6" x2="21" y2="6"/>
+                           <path d="M16 10a4 4 0 01-8 0"/>
+                           </svg>
+                      </button>
+                      </Link>
+                  </div>
+               <div class="pur-meta">
+              </div>
+              </div>
+
+               </div>
                     ))}
         
                     {/* Static card */}
@@ -85,5 +96,6 @@ export default function MyPurchases({ marketplace, nft, account }) {
                 <button>Load More</button>
               </div>
             </div>
+ 
   );
 }
