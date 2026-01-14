@@ -1,17 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import {Bids, Header, } from '../../components';
 
 
 
 const Home = ({ marketplace, nft }) => {
 
+  
+
+  console.log(marketplace);
+  console.log(nft);
+
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
-  const loadMarketplaceItems = async () => {
+  const loadMarketplaceItems = useCallback(async () => {
     // Load all unsold items
     const itemCount = await marketplace.itemCount()
+    
     let items = []
     for (let i = 1; i <= itemCount; i++) {
+      console.log(itemCount);
       const item = await marketplace.items(i)
       if (!item.sold) {
         // get uri url from nft contract
@@ -35,7 +42,7 @@ const Home = ({ marketplace, nft }) => {
     setLoading(false)
     setItems(items)
     console.log(items)
-  }
+  }, [marketplace, nft])
 
   const buyMarketItem = async (item) => {
     await (await marketplace.purchaseItem(item.itemId, { value: item.totalPrice })).wait()
@@ -44,17 +51,19 @@ const Home = ({ marketplace, nft }) => {
 
   useEffect(() => {
     loadMarketplaceItems()
-  }, [])
+  }, [loadMarketplaceItems])
   if (loading) return (
     <main style={{ padding: "1rem 0" }}>
       <h2>Loading...</h2>
     </main>
   )
 
-  return <div>
+  return (
+    <div>
    <Header />
    <Bids items={items} buyMarketItem={buyMarketItem}  />
-  </div>;
+  </div>
+  );
 };
 
 export default Home;

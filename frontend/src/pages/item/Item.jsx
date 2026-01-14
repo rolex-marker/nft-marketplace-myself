@@ -6,10 +6,28 @@ import { useState, useEffect } from 'react';
 
 const Item = ({marketplace, nft}) => {
 
+  console.log(marketplace);
    const itemId = localStorage.getItem("DetailItemId");
   
     const [loading, setLoading] = useState(true)
     const [item, setItem] = useState(null)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const phurchase = async(itemId, totalPrice) => {
+      if (isSubmitting) return
+
+      setIsSubmitting(true)
+      try{
+        await (await marketplace.purchaseItem(itemId, {
+              value: totalPrice,
+            })).wait()
+            alert("NFT Buy successfully 🎉")
+      } catch(err) {
+       console.error(err)
+      } finally {
+      setIsSubmitting(false)
+      }
+    }
 
   const loadItem = async () => {
     const itemData = await marketplace.items(itemId);
@@ -68,9 +86,7 @@ return (
       <div className="item-content-buy">
         <button
           onClick={() =>
-            marketplace.purchaseItem(item.itemId, {
-              value: item.totalPrice,
-            })
+            phurchase(item.itemId, item.totalPrice)
           }
           className="primary-btn"
         >

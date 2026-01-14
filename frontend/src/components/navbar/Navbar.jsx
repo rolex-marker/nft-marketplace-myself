@@ -7,8 +7,9 @@ import {  Link } from "react-router-dom";
 const Menu = () => (
   <>
      <Link to="/"><p>Explore</p> </Link>
-     <Link to="/mylisteditem"><p>My Items</p> </Link>
-     <Link to="/purchasedItem"><p>My purchasedItems</p> </Link>
+     <Link to="/purchasedItem"><p>MY ITEMS</p> </Link>
+     <Link to="/mylisteditem"><p>MY HISTORY</p> </Link>
+     <Link to="/create"><p>MINT CREATE</p> </Link>
   </>
  )
 
@@ -57,9 +58,6 @@ const Menu = () => (
 
        {account ? (
               <>
-               <Link to="/create"> 
-               <button type='button' className='primary-btn' >Create</button>
-               </Link>
                 <Link to="/home"> 
                 <button type='button' className='primary-btn' > {account.slice(0, 5) + '...' + account.slice(38, 42)}</button>
                </Link> 

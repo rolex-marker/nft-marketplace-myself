@@ -59,7 +59,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
     <div className='bids section__padding'>
           <div className="bids-container">
             <div className="bids-container-text">
-              <h1>MY ITEMS</h1>
+              <h1>MY MINT ITEMS</h1>
             </div>
     
             {listedItems.length > 0 ? (
@@ -135,3 +135,24 @@ export default function MyListedItems({ marketplace, nft, account }) {
   );
 
 }
+
+//<div className="flex justify-center">
+    //   {purchases.length > 0 ?
+    //     <div className="px-5 container">
+    //       <Row xs={1} md={2} lg={4} className="g-4 py-5">
+    //         {purchases.map((item, idx) => (
+    //           <Col key={idx} className="overflow-hidden">
+    //             <Card>
+    //               <Card.Img variant="top" src={item.image} />
+    //               <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+    //             </Card>
+    //           </Col>
+    //         ))}
+    //       </Row>
+    //     </div>
+    //     : (
+    //       <main style={{ padding: "1rem 0" }}>
+    //         <h2>No purchases</h2>
+    //       </main>
+    //     )}
+    // </div>

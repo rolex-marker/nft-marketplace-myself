@@ -6,3 +6,4 @@ export {default as Login} from './login/Login';
 export {default as Register} from './register/Register';
 export {default as Mylisteditem} from './mylisteditem/Mylisteditem';
 export {default as PurchasedItem} from './purchasedItem/PurchasedItem';
+export {default as Marketing} from './marketing/Marketing';
