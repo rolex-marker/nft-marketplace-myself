@@ -8,12 +8,16 @@ const Home = ({ marketplace, nft }) => {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
   const loadMarketplaceItems = useCallback(async () => {
+   
     // Load all unsold items
-    const itemCount = await marketplace.itemCount()
-    
+    console.log(">>>>>>",marketplace);
+    console.log("NFT address:", nft.address);
+    const itemCount = await marketplace.itemCount();
+    console.log(">>>>>>");
     let items = []
+    
     for (let i = 1; i <= itemCount; i++) {
-      
+       
       const item = await marketplace.items(i)
       if (!item.sold) {
         // get uri url from nft contract
@@ -46,7 +50,7 @@ const Home = ({ marketplace, nft }) => {
   }, [loadMarketplaceItems])
   if (loading) return (
     <main style={{ padding: "1rem 0" }}>
-      <h2>Loading...</h2>
+      <h2>LoadingHome...</h2>
     </main>
   )
 

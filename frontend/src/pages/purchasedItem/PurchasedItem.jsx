@@ -20,12 +20,14 @@ export default function MyPurchases({ marketplace, nft, account }) {
             const uri = await nft.tokenURI(i.tokenId);
             const response = await fetch(uri);
             const metadata = await response.json();
+            const owner = await nft.ownerOf(i.tokenId);
             console.log('purchases',metadata)
 
             // const totalPrice = await marketplace.getTotalPrice(i.itemId);
             let totalPrice;
                 try {
                   totalPrice = await marketplace.getTotalPrice(i.itemId);
+                   
                 } catch {
                   totalPrice = i.price;
                 }
@@ -35,6 +37,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                 price: i.price,
                 itemId: i.itemId,
                 tokenId: i.tokenId,
+                purOwner : owner,
                 name: metadata.name,
                 description: metadata.description,
                 image: metadata.image
@@ -42,8 +45,9 @@ export default function MyPurchases({ marketplace, nft, account }) {
             return purchasedItem;
         }))
         setLoading(false);
-        setPurchases(purchases);
-        console.log('purchases',purchases)
+        setPurchases(purchases.filter(e => e.purOwner.toLowerCase() === account.toLowerCase()));
+        console.log('purchases',purchases);
+       
     },[marketplace, nft, account]);
 
     useEffect(() => {
@@ -72,6 +76,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
                           <div class="pur-info">
                           <h2 class="pur-title">{item.name}</h2>
                            <p class="pur-desc">{item.description}</p>
+                    
                              <div class="pur-bottom">
                            <div class="pur-price">
                             <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>

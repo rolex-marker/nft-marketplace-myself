@@ -420,10 +420,10 @@
         "Strings"
       ]
     },
-    "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
-      "lastModificationDate": 1768257896858,
-      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
-      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+    "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
+      "lastModificationDate": 1768257899857,
+      "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
+      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -448,14 +448,14 @@
           }
         }
       },
-      "imports": [],
+      "imports": [
+        "../IERC721.sol"
+      ],
       "versionPragmas": [
-        ">=0.8.4"
+        ">=0.6.2"
       ],
       "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
+        "IERC721Metadata"
       ]
     },
     "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
@@ -494,10 +494,10 @@
         "Context"
       ]
     },
-    "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
-      "lastModificationDate": 1768257899857,
-      "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
-      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
+    "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
+      "lastModificationDate": 1768257896858,
+      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
+      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -522,14 +522,14 @@
           }
         }
       },
-      "imports": [
-        "../IERC721.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
-        ">=0.6.2"
+        ">=0.8.4"
       ],
       "artifacts": [
-        "IERC721Metadata"
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
       ]
     },
     "C:\\Users\\Rolex\\Downloads\\nft-marketplace-myself\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\utils\\ERC721Utils.sol": {
