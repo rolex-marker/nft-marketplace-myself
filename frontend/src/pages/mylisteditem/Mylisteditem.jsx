@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ethers } from 'ethers'
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import './Mylisteditem.css'
-import { Row, Col, Card } from 'react-bootstrap'
+
 
 export default function MyListedItems({ marketplace, nft, account }) {
 
@@ -11,13 +11,16 @@ export default function MyListedItems({ marketplace, nft, account }) {
     const [soldItems, setSoldItems] = useState([])
 
     const loadListedItems = useCallback(async () => {
+       console.log(">>>>", account);
     // Load all sold items that the user listed
     const itemCount = await marketplace.itemCount()
     let listedItems = []
     let soldItems = []
     for (let indx = 1; indx <= itemCount; indx++) {
+     
       const i = await marketplace.items(indx)
-      if (i.seller.toLowerCase() === account) {
+      if (i.seller.toLowerCase() === account.toLowerCase()) {
+       
         // get uri url from nft contract
         const uri = await nft.tokenURI(i.tokenId)
         // use uri to fetch the nft metadata stored on ipfs 
@@ -35,12 +38,14 @@ export default function MyListedItems({ marketplace, nft, account }) {
           image: metadata.image
         }
         listedItems.push(item)
+         
         // Add listed item to sold items array if sold
         if (i.sold) soldItems.push(item)
       }
     }
     setLoading(false)
     setListedItems(listedItems)
+   
     setSoldItems(soldItems)
   }, [marketplace, nft, account]);
 
