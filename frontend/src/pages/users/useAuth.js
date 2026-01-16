@@ -29,10 +29,10 @@ export const useAuth = () => {
       signature,
     });
 
-    if (verify.data.success) {
-      setaccountState(address);
-      console.log('Login success:', address);
-    } else {
+   if (verify.data.success) {
+  localStorage.setItem("token", verify.data.token);
+  setaccountState(address);
+} else {
       console.log('Login failed');
     }
   };
