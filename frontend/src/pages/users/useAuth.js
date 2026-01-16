@@ -29,6 +29,7 @@ export const useAuth = () => {
       signature,
     });
 
+    console.log("data",verify.data);
    if (verify.data.success) {
   localStorage.setItem("token", verify.data.token);
   setaccountState(address);

@@ -14,7 +14,8 @@ const Menu = () => (
   </>
 );
 
-const Navbar = ({ loginWithMetaMask, account }) => {
+const Navbar = ({ loginWithMetaMask, account, form }) => {
+  console.log("form??", form);
   const [toggleMenu, setToggleMenu] = useState(false);
 
   return (
@@ -37,16 +38,21 @@ const Navbar = ({ loginWithMetaMask, account }) => {
       {/* Right side */}
       <div className="navbar-sign">
         {account ? (
-          <button type="button" className="primary-btn">
+          <Link to="/profile">
+          {/* <button type="button" className="primary-btn">
             {account.slice(0, 6)}...{account.slice(-4)}
-          </button>
+          </button> */}
+          <div className="nav-avatar_information">
+          <img className='nav-avatar' src={form.avatar} alt="people"/> <span className='nav-username'> {form.username}</span>
+          </div>
+          </Link>
         ) : (
           <button
             onClick={loginWithMetaMask}
             type="button"
             className="secondary-btn"
           >
-            Connect Wallet
+            Login with Wallet
           </button>
         )}
       </div>

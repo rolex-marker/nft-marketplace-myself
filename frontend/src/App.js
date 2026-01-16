@@ -18,6 +18,11 @@ function App() {
   const [account, setAccount] = useState(null);  // Connected wallet/account
   const [marketplace, setMarketplace] = useState({});
   const [nft, setNFT] = useState({});
+  const [form, setForm] = useState({
+    username: "",
+    bio: "",
+    avatar: "",
+  });
 
   const loginWithMetaMask = async () => {
     if (!window.ethereum) {
@@ -45,9 +50,18 @@ function App() {
       });
 
       if (verify.data.success) {
+        localStorage.setItem("token", verify.data.token);
         setAccount(address);
         console.log('Login success:', address);
-        loadContracts(signer); // Load contracts once wallet is authenticated
+        loadContracts(signer); 
+         axios.get("http://localhost:4000/profile", {
+      headers: { Authorization: `Bearer ${verify.data.token}` },
+       }).then(res => {
+       if (res.data) {
+        setForm(res.data);
+        console.log(res.data)
+      }
+    });
       } else {
         console.log('Login failed');
       }
@@ -72,6 +86,17 @@ function App() {
     }
   };
 
+  const reloadUserinfor = () => {
+     axios.get("http://localhost:4000/profile", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+       }).then(res => {
+       if (res.data) {
+        setForm(res.data);
+        console.log(res.data)
+      }
+    });
+  }
+
   
   useEffect(() => {
     if (window.ethereum) {
@@ -82,7 +107,7 @@ function App() {
 
   return (
     <div>
-      <Navbar loginWithMetaMask={loginWithMetaMask} account={account} />
+      <Navbar loginWithMetaMask={loginWithMetaMask} account={account} form={form}/>
       <div>
         {loading ? (
           <Loading />
@@ -91,7 +116,7 @@ function App() {
             <Route path="/" element={<Home marketplace={marketplace} nft={nft} account={account} />} />
             <Route path="/itemDetail" element={<Item marketplace={marketplace} nft={nft} account={account} />} />
             <Route path="/create" element={<Create marketplace={marketplace} nft={nft} account={account} />} />
-            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/profile" element={<Profile marketplace={marketplace} nft={nft} account={account} formFir = {form} reloadUserinfor = {reloadUserinfor}/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/mylisteditem" element={<Mylisteditem marketplace={marketplace} nft={nft} account={account} />} />
