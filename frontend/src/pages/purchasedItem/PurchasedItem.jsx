@@ -21,7 +21,6 @@ export default function MyPurchases({ marketplace, nft, account }) {
             const response = await fetch(uri);
             const metadata = await response.json();
             const owner = await nft.ownerOf(i.tokenId);
-            console.log('purchases',metadata)
 
             // const totalPrice = await marketplace.getTotalPrice(i.itemId);
             let totalPrice;
@@ -45,9 +44,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
             return purchasedItem;
         }))
         setLoading(false);
-        setPurchases(purchases.filter(e => e.purOwner.toLowerCase() === account.toLowerCase()));
-        console.log('purchases',purchases);
-       
+        setPurchases(purchases.filter(e => e.purOwner.toLowerCase() === account.toLowerCase()));   
     },[marketplace, nft, account]);
 
     useEffect(() => {

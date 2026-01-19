@@ -152,3 +152,21 @@
   }
 
  }
+
+ .nav-avatar_information {
+  position: relative;
+ }
+
+ .nav-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+ }
+
+ .nav-username {
+  position: absolute;
+  color : white;
+  font-size: 15px;
+  top: 42px;
+  left: 8px;
+ }
