@@ -68,7 +68,7 @@ line-height: 21px;
   color: white;
   font-size: 16px;
   line-height: 26px;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .formGroup textarea{

@@ -16,6 +16,9 @@
   margin-bottom: 1rem;
 }
 .bids-container-card{
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  column-gap: 20px;
   margin: 0 -5px;
 }
 .bids-container-card:after {
@@ -97,13 +100,18 @@ font-weight: normal;
     width: 33.33%;
     
   }
+  .bids-container-card{
+  grid-template-columns: auto auto auto auto;
+}
 }
 
 @media screen and (max-width: 900px) {
   .card-column {
     width: 50%;
-    
   }
+  .bids-container-card{
+  grid-template-columns: auto auto auto;
+}
 }
 @media screen and (max-width: 550px) {
   .section__padding{
@@ -125,6 +133,9 @@ font-weight: normal;
   .bids-container{
     width: 100%;
   }
+  .bids-container-card{
+  grid-template-columns: auto auto;
+}
 
  
 }
@@ -169,4 +180,124 @@ font-weight: normal;
 }
 .pur-btn:hover .pur-icon{
   transform:rotate(-10deg) scale(1.1)
+}
+
+
+
+
+.card-container {
+    /* width: 100%; */
+    max-width: 400px;
+    margin: 1em auto;
+    background-color: #2A2D3A;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+div.flex-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+div.coin-base, .time-left, .card-attribute {
+    display: flex;
+    align-items: center;
+    padding: 0.5em 0;
+}
+
+.card-attribute {
+    padding-bottom: 0.5em;
+    border-top: 2px solid var(--var-line-dark);
+}
+
+a.hero-image-container {
+    position: relative;
+    display: block;
+}
+
+
+
+/* Details */
+
+img.eye {
+    position: absolute;
+    width: 100%;
+    max-width: 2em;
+    top: 44%;
+    left: 43%;
+}
+
+@media (min-width:400px) {
+  img.eye {
+    max-width: 3em;
+}
+}
+
+.hero-image-container::after {
+    content: '';
+    background-image: url("https://i.postimg.cc/9MtT4GZY/view.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 5rem;
+    background-color: hsla(178, 100%, 50%, 0.3);
+    width: 100%;
+    height: 100%;
+    border-radius: 1rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
+.hero-image-container:hover::after {
+  opacity: 1;
+}
+
+.small-image {
+    width: 1.2em;
+    margin-right: .5em;
+}
+
+.small-avatar {
+    width: 2em;
+    border-radius: 200px;
+    outline: 2px solid white;
+    margin-right: 1em;
+}
+
+div.attribution {
+    margin: 0 auto;
+    width: 100%;
+    font: var(--var-para);
+    text-align: center;
+    padding: 1.5em 0 4em 0;
+    color: var(--var-line-dark);
+}
+.attribution a {
+    color: var(--var-soft-blue);
+}
+
+.main-content_h1 {
+  margin-bottom: 3px;
+  font-size: 1.5em;
+  color: #FFFFFF;
+}
+.main-content_h2 {
+  font-size: 1.2em;
+  color: #FFFFFF;
+}
+
+.main-content_p {
+  margin-bottom: 3px;
+  font-size: o.8em;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+.bids-card_img{
+  border-radius: 10px;
 }

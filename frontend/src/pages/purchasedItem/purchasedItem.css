@@ -104,8 +104,10 @@ font-weight: normal;
 
 @media screen and (max-width: 900px) {
   .card-column {
-    width: 50%;
-    
+    width: 50%; 
+  }
+  .pursha-container-card {
+    grid-template-columns: auto auto auto;
   }
 }
 @media screen and (max-width: 550px) {
@@ -127,6 +129,9 @@ font-weight: normal;
   }
   .pursha-container{
     width: 100%;
+  }
+   .pursha-container-card {
+    grid-template-columns: auto auto;
   }
 }
 

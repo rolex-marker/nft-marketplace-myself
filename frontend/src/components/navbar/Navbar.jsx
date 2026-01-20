@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 const Menu = () => (
   <>
     <Link to="/"><p>Explore</p></Link>
+    <Link to="/auctions"><p>Auctions</p></Link>
     <Link to="/purchasedItem"><p>MY ITEMS</p></Link>
     <Link to="/mylisteditem"><p>MY HISTORY</p></Link>
     <Link to="/create"><p>MINT CREATE</p></Link>

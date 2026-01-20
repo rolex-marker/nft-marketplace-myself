@@ -8,6 +8,8 @@ import '../create/create.css';
 
 export default function Marketing({ marketplace, nft }) {
   const { id, tokenId } = useParams();
+  console.log("id>>>>", id)
+  console.log("tokenId>>>>", tokenId)
   const [loading, setLoading] = useState(true)
    const [item, setItem] = useState(null)
    const [price, setPrice] = useState(null)
@@ -62,6 +64,8 @@ export default function Marketing({ marketplace, nft }) {
   
       setLoading(false);
     };
+
+    
       useEffect(() => {
       loadItem();
     }, []);
