@@ -108,7 +108,7 @@ const [image, setImage] = useState('')
   }
 
   return (
-    <div className='create section__padding'>
+    <div className='create'>
       <div className="create-container">
         <h1>Create new Item</h1>
         <p className='upload-file'>Upload File</p>

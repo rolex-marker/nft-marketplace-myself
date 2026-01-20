@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link } from 'react-router-dom';
 import { ethers } from 'ethers'
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+
 import './Mylisteditem.css'
+import '../purchasedItem/purchasedItem1.css'
 
 
 export default function MyListedItems({ marketplace, nft, account }) {
@@ -11,18 +13,16 @@ export default function MyListedItems({ marketplace, nft, account }) {
     const [soldItems, setSoldItems] = useState([])
 
     const loadListedItems = useCallback(async () => {
-       console.log(">>>>", account);
     // Load all sold items that the user listed
     const itemCount = await marketplace.itemCount()
     let listedItems = []
     let soldItems = []
     for (let indx = 1; indx <= itemCount; indx++) {
-     
       const i = await marketplace.items(indx)
-      if (i.seller.toLowerCase() === account.toLowerCase()) {
-       
+      if (i.seller.toLowerCase() !== account.toLowerCase()) continue;
         // get uri url from nft contract
-        const uri = await nft.tokenURI(i.tokenId)
+        const uri = await nft.tokenURI(i.tokenId);
+        const owner = await nft.ownerOf(i.tokenId);
         // use uri to fetch the nft metadata stored on ipfs 
         const response = await fetch(uri)
         const metadata = await response.json()
@@ -33,21 +33,36 @@ export default function MyListedItems({ marketplace, nft, account }) {
           totalPrice,
           price: i.price,
           itemId: i.itemId,
+          tokenId: i.tokenId,
           name: metadata.name,
           description: metadata.description,
-          image: metadata.image
+          image: metadata.image,
+          sold: i.sold
         }
-        listedItems.push(item)
-         
-        // Add listed item to sold items array if sold
-        if (i.sold) soldItems.push(item)
-      }
+        // Only add to listedItems if not sold/cancelled
+          if (!i.sold) {
+            listedItems.push(item);
+          } else {
+            if(owner.toLowerCase() === account.toLowerCase()) soldItems.push(item);
+          }   
     }
     setLoading(false)
     setListedItems(listedItems)
-   
     setSoldItems(soldItems)
   }, [marketplace, nft, account]);
+
+  const cancelListing = async (itemId) => {
+  if (!marketplace) return;
+  try {
+    const tx = await marketplace.cancelItem(itemId);
+    await tx.wait();
+    alert("Listing cancelled successfully 🎉");
+    loadListedItems(); // refresh UI
+  } catch (err) {
+    console.error(err);
+    alert("Cancel failed: " + (err?.data?.message || err.message));
+  }
+};
 
   useEffect(() => {
     loadListedItems()
@@ -68,35 +83,46 @@ export default function MyListedItems({ marketplace, nft, account }) {
             </div>
     
             {listedItems.length > 0 ? (
-              <div className="bids-container-card">
-                {listedItems.map((item) => (
-                  <div className="card-column" key={item.itemId.toString()}>
-                    <div className="bids-card">
-                      <div className="bids-card-top">
-                        <img src={item.image} alt={item.name} />
-                          <p >
-                            {item.name}
-                          </p>
-                      </div>
-                      <div className="bids-card-bottom">
-                        <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
-                        <p><AiFillHeart /> 92</p>
-                      </div>
-                    </div>
-                    <div className="bid-like">
-                      <AiOutlineHeart />
-                    </div>
-                  </div>
-                ))}
-    
-                {/* Static card */}
-               
+              <div className="pursha-container-card">
+                                {listedItems.map((item) => (
+                                  <div class="pur-card" key={item.itemId.toString()}>
+                                    <div class="pur-tilt">
+                                     <div class="pur-img"><img src={item.image} alt="Premium Laptop" /></div>
+                                     </div>
+                                      <div class="pur-info">
+                                      <h2 class="pur-title">{item.name}</h2>
+                                       <p class="pur-desc">{item.description}</p>
+                                
+                                         <div class="pur-bottom">
+                                       <div class="pur-price">
+                                        <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>
+                                        </div>
+                                       
+                                         <button class="pur-btn" onClick={() => cancelListing(item.itemId)}>
+                                        <span>CANCEL</span>
+                                       <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                       <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                                       <line x1="3" y1="6" x2="21" y2="6"/>
+                                       <path d="M16 10a4 4 0 01-8 0"/>
+                                       </svg>
+                                  </button>
+                                 
+                              </div>
+                           <div class="pur-meta">
+                          </div>
+                          </div>
+            
+                           </div>
+                                ))}
+                    
+                                {/* Static card */}
+                               
               </div>
-            ) : (
+                ) : (
               <main style={{ padding: "1rem 0" }}>
-                <h2>No listed assets</h2>
+              <h2>No listed assets</h2>
               </main>
-            )}
+                            )}
           </div>
           <div className="bids-container">
             <div className="bids-container-text">
@@ -104,35 +130,58 @@ export default function MyListedItems({ marketplace, nft, account }) {
             </div>
     
             {soldItems.length > 0 ? (
-              <div className="bids-container-card">
-                {soldItems.map((item) => (
-                  <div className="card-column" key={item.itemId.toString()}>
-                    <div className="bids-card">
-                      <div className="bids-card-top">
-                        <img src={item.image} alt={item.name} />
-                          <p >
-                            {item.name}
-                          </p>
-                      </div>
-                      <div className="bids-card-bottom">
-                        <p>{ethers.utils.formatEther(item.totalPrice)} <span>ETH</span></p>
-                        <p><AiFillHeart /> 92</p>
-                      </div>
-                    </div>
-                    <div className="bid-like">
-                      <AiOutlineHeart />
-                    </div>
-                  </div>
-                ))}
-                   
+            <div className="pursha-container-card">
+                                {soldItems.map((item) => (
+                                  <div class="pur-card" key={item.itemId.toString()}>
+                                    <div class="pur-tilt">
+                                     <div class="pur-img"><img src={item.image} alt="Premium Laptop" /></div>
+                                     </div>
+                                      <div class="pur-info">
+                                      <h2 class="pur-title">{item.name}</h2>
+                                       <p class="pur-desc">{item.description}</p>
+                                
+                                         
+                                       <div class="pur-price">
+                                        <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>
+                                        </div>
+                                        <div class="pur-buttonbox">
+                                        <Link to={`/marketing/${item.itemId}/${item.tokenId}`}>
+                                          <button class="pur-btn" >
+                                          <span>RELI</span>
+                                            <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                                            <line x1="3" y1="6" x2="21" y2="6"/>
+                                            <path d="M16 10a4 4 0 01-8 0"/>
+                                            </svg>
+                                          </button>
+                                        </Link>
+                                        <Link to={`/createauction/${item.itemId}/${item.tokenId}`}>
+                                          <button class="pur-btn" >
+                                          <span>AUCT</span>
+                                            <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                                            <line x1="3" y1="6" x2="21" y2="6"/>
+                                            <path d="M16 10a4 4 0 01-8 0"/>
+                                            </svg>
+                                          </button>
+                                        </Link>
+                                        </div>
+                           <div class="pur-meta">
+                          </div>
+                          </div>
+            
+                           </div>
+                                ))}
+                    
+                                {/* Static card */}
+                               
               </div>
             ) : (
-              <main style={{ padding: "1rem 0" }}>
-                <h2>No Sold listed assets</h2>
-              </main>
+            <main style={{ padding: "1rem 0" }}>
+            <h2>No listed assets</h2>
+            </main>
             )}
           </div>
-    
           <div className="load-more">
             <button>Load More</button>
           </div>
@@ -141,23 +190,3 @@ export default function MyListedItems({ marketplace, nft, account }) {
 
 }
 
-//<div className="flex justify-center">
-    //   {purchases.length > 0 ?
-    //     <div className="px-5 container">
-    //       <Row xs={1} md={2} lg={4} className="g-4 py-5">
-    //         {purchases.map((item, idx) => (
-    //           <Col key={idx} className="overflow-hidden">
-    //             <Card>
-    //               <Card.Img variant="top" src={item.image} />
-    //               <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
-    //             </Card>
-    //           </Col>
-    //         ))}
-    //       </Row>
-    //     </div>
-    //     : (
-    //       <main style={{ padding: "1rem 0" }}>
-    //         <h2>No purchases</h2>
-    //       </main>
-    //     )}
-    // </div>

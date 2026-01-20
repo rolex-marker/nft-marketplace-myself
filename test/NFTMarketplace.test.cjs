@@ -24,7 +24,7 @@ describe("NFTMarketplace", function () {
 
     // To deploy our contracts
     nft = await NFT.deploy();
-    marketplace = await Marketplace.deploy(feePercent);
+    marketplace = await Marketplace.deploy(deployer.address, feePercent);
   });
 
   describe("Deployment", function () {
@@ -163,5 +163,64 @@ describe("NFTMarketplace", function () {
         marketplace.connect(addr3).purchaseItem(1, {value: totalPriceInWei})
       ).to.be.revertedWith("item already sold");
     });
+  });
+
+  describe("Cancel marketplace items", function () {
+  let price = 1
+
+  beforeEach(async function () {
+    // addr1 mints NFT
+    await nft.connect(addr1).mint(URI)
+    // approve marketplace
+    await nft.connect(addr1).setApprovalForAll(marketplace.address, true)
+    // list item
+    await marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price))
   })
+
+  it("Should allow seller to cancel listing and return NFT", async function () {
+    // cancel item
+    await expect(
+      marketplace.connect(addr1).cancelItem(1)
+    )
+      .to.emit(marketplace, "Cancelled")
+      .withArgs(
+        1,
+        nft.address,
+        1,
+        addr1.address
+      )
+
+    // NFT should be returned to seller
+    expect(await nft.ownerOf(1)).to.equal(addr1.address)
+
+    // item should be marked sold (cancelled)
+    const item = await marketplace.items(1)
+    expect(item.sold).to.equal(true)
+  })
+
+  it("Should fail if non-seller tries to cancel", async function () {
+    await expect(
+      marketplace.connect(addr2).cancelItem(1)
+    ).to.be.revertedWith("not item seller")
+  })
+
+  it("Should fail if item does not exist", async function () {
+    await expect(
+      marketplace.connect(addr1).cancelItem(2)
+    ).to.be.revertedWith("item doesn't exist")
+  })
+
+  it("Should fail if item already sold", async function () {
+    const totalPrice = await marketplace.getTotalPrice(1)
+
+    // buy item
+    await marketplace.connect(addr2).purchaseItem(1, { value: totalPrice })
+
+    // seller tries cancel
+    await expect(
+      marketplace.connect(addr1).cancelItem(1)
+    ).to.be.revertedWith("item already sold or cancelled")
+  })
+})
+
 })

@@ -70,7 +70,7 @@ export default function Profile({formFir, reloadUserinfor }) {
   
 
   return (
-    <div className='create section__padding'>
+    <div className='create'>
       <div className="create-container">
         <h1>Make and Edit your Profile</h1>
         <p className='upload-file'>Upload Avatar File</p>

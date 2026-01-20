@@ -7,3 +7,6 @@ export {default as Register} from './register/Register';
 export {default as Mylisteditem} from './mylisteditem/Mylisteditem';
 export {default as PurchasedItem} from './purchasedItem/PurchasedItem';
 export {default as Marketing} from './marketing/Marketing';
+export {default as CreateAuction} from './createAuction/CreateAuction';
+export {default as AuctionCard} from './auctionCard/AuctionCard';
+export {default as Auctions} from './auctions/Auctions';

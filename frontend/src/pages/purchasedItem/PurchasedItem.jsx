@@ -8,29 +8,22 @@ export default function MyPurchases({ marketplace, nft, account }) {
     const [ loading, setLoading ] = useState(true);
     const [ purchases, setPurchases ] = useState([]);
 
-    const loadPurchasedItems =  useCallback(async () => {
-        
-        // const filter = marketplace.filters.Bought(null, null, null, null, null, account);
-        // const results = await marketplace.queryFilter(filter)
+    const loadPurchasedItems =  useCallback(async () => {      
         const events = await marketplace.queryFilter("Bought");
         const results = events.filter(e => e.args.buyer.toLowerCase() === account.toLowerCase());
-
         const purchases = await Promise.all(results.map(async i => {
             i = i.args;
             const uri = await nft.tokenURI(i.tokenId);
             const response = await fetch(uri);
             const metadata = await response.json();
             const owner = await nft.ownerOf(i.tokenId);
-
             // const totalPrice = await marketplace.getTotalPrice(i.itemId);
             let totalPrice;
                 try {
-                  totalPrice = await marketplace.getTotalPrice(i.itemId);
-                   
+                  totalPrice = await marketplace.getTotalPrice(i.itemId); 
                 } catch {
                   totalPrice = i.price;
                 }
-
             let purchasedItem = {
                 totalPrice,
                 price: i.price,
@@ -45,7 +38,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
         }))
         setLoading(false);
         setPurchases(purchases.filter(e => e.purOwner.toLowerCase() === account.toLowerCase()));   
-    },[marketplace, nft, account]);
+        },[marketplace, nft, account]);
 
     useEffect(() => {
         loadPurchasedItems()
@@ -74,21 +67,33 @@ export default function MyPurchases({ marketplace, nft, account }) {
                           <h2 class="pur-title">{item.name}</h2>
                            <p class="pur-desc">{item.description}</p>
                     
-                             <div class="pur-bottom">
+                             
                            <div class="pur-price">
-                            <span class="pur-new">ETH{ethers.utils.formatEther(item.totalPrice)}</span>
-                            </div>
+                            <p class="pur-new">$ {ethers.utils.formatEther(item.totalPrice)} ETH</p>
+                           </div>
+                           <div class="pur-buttonbox">
                             <Link to={`/marketing/${item.itemId}/${item.tokenId}`}>
-                             <button class="pur-btn" >
-                            <span>list</span>
-                           <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
-                           <line x1="3" y1="6" x2="21" y2="6"/>
-                           <path d="M16 10a4 4 0 01-8 0"/>
-                           </svg>
-                      </button>
-                      </Link>
-                  </div>
+                              <button class="pur-btn" >
+                              <span>RELI</span>
+                                <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="M16 10a4 4 0 01-8 0"/>
+                                </svg>
+                              </button>
+                            </Link>
+                            <Link to={`/createauction/${item.itemId}/${item.tokenId}`}>
+                              <button class="pur-btn" >
+                              <span>AUCT</span>
+                                <svg class="pur-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="M16 10a4 4 0 01-8 0"/>
+                                </svg>
+                              </button>
+                            </Link>
+                          </div>
+                  
                <div class="pur-meta">
               </div>
               </div>

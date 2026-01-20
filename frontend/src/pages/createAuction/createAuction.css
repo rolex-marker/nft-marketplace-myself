@@ -1,0 +1,131 @@
+.createAuction {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+
+.createAuctio-item {
+	background-color: #2A2D3A;
+	width: calc(100% - calc(4.8rem * 2));
+	max-width: 480px;
+	padding: 2.8rem;
+	margin-bottom: 2.2rem;
+	display: flex;
+	flex-direction: column;
+	border-radius: 1.7rem;
+	box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.2);
+	transform: translateY(-1rem);
+	backdrop-filter: blur(1.5rem);
+	color: #ffffff;
+}
+
+.createAuctio-item:last-child {
+	margin-bottom: 0.5rem;
+}
+
+.createAuctio-item h3 {
+	font-size: 1.75rem;
+	font-weight: bold;
+	height: 2.8rem;
+	margin-bottom: 0.5rem;
+}
+
+.createAuctio-item figure {
+	width: 100%;
+	margin-bottom: 1.5rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	border-radius: 1.5rem;
+	left: 1em;
+}
+
+.createAuctio-item figure img {
+	height: 320px;
+	display: block;
+}
+
+.createAuctio-description {
+	color: rgba(255, 255, 255, 0.7);
+	background-color: rgba(0, 0, 0, 0.5);
+	width: calc(100% - calc(6rem * 2));
+	height: 170px;
+	line-height: 1.75rem;
+	padding: 2.5rem;
+	position: absolute;
+	top: calc(2.8rem + 3.3rem);
+	left: 3em;
+	overflow: auto;
+	opacity: 0;
+	border-radius: 1.5rem;
+	transition: opacity 200ms ease-out;
+}
+
+.createAuctio-item figure:hover + .createAuctio-description,
+.createAuctio-description:hover {
+	opacity: 1;
+}
+
+.createAuctio-item button {
+	width: 100%;
+	color: #d99904;
+	font-size: 1.5rem;
+	font-weight: bold;
+	text-shadow: 0 -1px #ffc233;
+	background-image: linear-gradient(#ffe46e 0%, #ffd936 30% 80%, #ffcd19 100%);
+	padding: 1.4rem;
+	border: solid 1px #c98d00;
+	outline: none;
+	border-radius: 2.5rem / 50%;
+	transition: filter 500ms ease-out;
+}
+
+.createAuctio-item button:hover {
+	filter: brightness(90%);
+}
+
+.createAuctio-item button:active {
+	filter: brightness(80%);
+}
+
+.createAuctio-price {
+	font-size: 1.4rem;
+	font-weight: bold;
+	margin-bottom: 1.5rem;
+}
+
+.createAuctio-special {
+	margin-bottom: 0.5rem;
+}
+
+.createAuctio-input {
+	padding: 0.8rem 1.2rem;
+	border: solid 1px #efefef;
+	margin-bottom: 1.2rem;
+	outline: none;
+	border-radius: 0.75rem;
+	transition: box-shadow 200ms ease-out;
+}
+
+.createAuctio-input:focus,
+.createAuctio-input:active {
+	box-shadow: 0 0 0 0.25rem rgba(43, 153, 255, 0.5);
+}
+
+.createAuctio-label {
+	margin-bottom: 0.7rem;
+}
+
+.createAuctio-imagebox {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.createAuctio-image {
+	border-radius: 20px;
+	width: 80%;
+}

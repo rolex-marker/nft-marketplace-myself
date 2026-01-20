@@ -3,7 +3,7 @@ import {Bids, Header, } from '../../components';
 
 
 
-const Home = ({ marketplace, nft }) => {
+const Home = ({ marketplace, nft, account }) => {
 
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
@@ -57,7 +57,7 @@ const Home = ({ marketplace, nft }) => {
   return (
     <div>
    <Header />
-   <Bids items={items}  />
+   <Bids items={items}  account={account}/>
   </div>
   );
 };

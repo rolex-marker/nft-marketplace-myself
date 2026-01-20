@@ -26,6 +26,12 @@
 .pur-rating{display:flex;align-items:center;gap:2px}
 .pur-rcount{margin-left:6px;font-size:11px;color:#71717A}
 .pur-stock{font-size:11px;font-weight:600;color:#22C55E}
+.pur-buttonbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px;
+}
 @media (max-width:400px){.pur-card{width:90%}.pur-title{font-size:16px}.pur-img{height:180px}.pur-bottom{flex-direction:column;align-items:flex-start;gap:10px}.pur-price{margin-bottom:5px}.pur-btn{width:100%;justify-content:center}}
 
 
