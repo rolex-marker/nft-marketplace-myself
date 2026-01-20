@@ -26,7 +26,7 @@ const Bids = ({ items = [], account }) => {
                 </Link>
                 <main class="main-content">
                   <h1 className='main-content_h1'> {item.name}</h1>
-                  <p className='main-content_p'>Category: art</p>
+                  <p className='main-content_p'>Category: {item.category} </p>
                   <div class="flex-row">
                     <div class="coin-base">
                       <img src="https://i.postimg.cc/T1F1K0bW/Ethereum.png" alt="Ethereum" class="small-image"/>
@@ -41,12 +41,7 @@ const Bids = ({ items = [], account }) => {
               </div>
           </div>
             ))}
-
-    
-
-            {/* Static card */}
-           
-          </div>
+        </div>
         ) : (
           <main style={{ padding: "1rem 0" }}>
             <h2>No listed assets</h2>

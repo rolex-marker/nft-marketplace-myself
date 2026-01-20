@@ -1,17 +1,17 @@
 import { ethers } from 'ethers';
 import './item.css'
-import creator from '../../assets/seller2.png'
 import { useState, useEffect } from 'react';
 
 
-const Item = ({marketplace, nft}) => {
+const Item = ({marketplace, nft, account}) => {
 
   console.log(marketplace);
    const itemId = localStorage.getItem("DetailItemId");
   
     const [loading, setLoading] = useState(true)
     const [item, setItem] = useState(null)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [seller, setSeller] = useState(null);
 
     const phurchase = async(itemId) => {
       if (isSubmitting) return
@@ -46,7 +46,9 @@ const Item = ({marketplace, nft}) => {
       description: metadata.description,
       image: metadata.image,
     });
-
+    console.log("seller>>>>",itemData.seller);
+    console.log("account>>>>", account);
+    setSeller(itemData.seller);
     setLoading(false);
   };
 
@@ -87,14 +89,14 @@ return (
       </div>
 
       <div className="item-content-buy">
-        <button
+        { seller === account ? "":(<button
           onClick={() =>
             phurchase(item.itemId)
           }
           className="primary-btn"
         >
           Buy for {ethers.utils.formatEther(item.totalPrice)} ETH
-        </button>
+        </button>) }
         
       </div>
     </div>

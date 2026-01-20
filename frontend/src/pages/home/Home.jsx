@@ -10,18 +10,17 @@ const Home = ({ marketplace, nft, account }) => {
   const loadMarketplaceItems = useCallback(async () => {
    
     // Load all unsold items
-    console.log(">>>>>>",marketplace);
-    console.log("NFT address:", nft.address);
     const itemCount = await marketplace.itemCount();
-    console.log(">>>>>>");
     let items = []
     
     for (let i = 1; i <= itemCount; i++) {
        
       const item = await marketplace.items(i)
-      if (!item.sold) {
+       await console.log("owner>>>", item);
+      if (!item.sold && !item.isAuction) {
         // get uri url from nft contract
-        const uri = await nft.tokenURI(item.tokenId)
+        const uri = await nft.tokenURI(item.tokenId);
+        
         // use uri to fetch the nft metadata stored on ipfs 
         const response = await fetch(uri)
         const metadata = await response.json()
@@ -34,13 +33,17 @@ const Home = ({ marketplace, nft, account }) => {
           seller: item.seller,
           name: metadata.name,
           description: metadata.description,
-          image: metadata.image
+          image: metadata.image,
+          category: metadata.category,
+          availitem: metadata.availitem,
+          isAuction: item.isAuction
         })
+         
       }
+     
     }
     setLoading(false)
     setItems(items)
-    console.log(items)
   }, [marketplace, nft])
 
   

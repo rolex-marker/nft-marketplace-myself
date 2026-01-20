@@ -10,46 +10,60 @@ export default function MyListedItems({ marketplace, nft, account }) {
 
     const [ loading, setLoading ] = useState(true)
     const [listedItems, setListedItems ] = useState([])
-    const [soldItems, setSoldItems] = useState([])
+    const [myownItems, setMyownItems] = useState([])
 
     const loadListedItems = useCallback(async () => {
-    // Load all sold items that the user listed
-    const itemCount = await marketplace.itemCount()
-    let listedItems = []
-    let soldItems = []
-    for (let indx = 1; indx <= itemCount; indx++) {
-      const i = await marketplace.items(indx)
-      if (i.seller.toLowerCase() !== account.toLowerCase()) continue;
-        // get uri url from nft contract
-        const uri = await nft.tokenURI(i.tokenId);
-        const owner = await nft.ownerOf(i.tokenId);
-        // use uri to fetch the nft metadata stored on ipfs 
-        const response = await fetch(uri)
-        const metadata = await response.json()
-        // get total price of item (item price + fee)
-        const totalPrice = await marketplace.getTotalPrice(i.itemId)
-        // define listed item object
-        let item = {
-          totalPrice,
-          price: i.price,
-          itemId: i.itemId,
-          tokenId: i.tokenId,
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image,
-          sold: i.sold
-        }
-        // Only add to listedItems if not sold/cancelled
-          if (!i.sold) {
-            listedItems.push(item);
-          } else {
-            if(owner.toLowerCase() === account.toLowerCase()) soldItems.push(item);
-          }   
+  if (!marketplace || !nft || !account) return;
+
+  const itemCount = await marketplace.itemCount();
+  let listedItems = [];
+  let myownItems = [];
+
+  const ownedTokenIds = new Set();
+
+  for (let indx = 1; indx <= itemCount; indx++) {
+    const i = await marketplace.items(indx);
+
+    const uri = await nft.tokenURI(i.tokenId);
+    const owner = await nft.ownerOf(i.tokenId);
+    const response = await fetch(uri);
+    const metadata = await response.json();
+    const totalPrice = await marketplace.getTotalPrice(i.itemId);
+
+    const item = {
+      totalPrice,
+      price: i.price,
+      itemId: i.itemId,
+      tokenId: i.tokenId,
+      name: metadata.name,
+      description: metadata.description,
+      image: metadata.image,
+      sold: i.sold,
+    };
+
+    // 🔵 My active listings
+    if (
+      i.seller.toLowerCase() === account.toLowerCase() &&
+      !i.sold
+    ) {
+      listedItems.push(item);
     }
-    setLoading(false)
-    setListedItems(listedItems)
-    setSoldItems(soldItems)
-  }, [marketplace, nft, account]);
+
+    // 🟢 NFTs I currently OWN (unique by tokenId)
+    if (
+      owner.toLowerCase() === account.toLowerCase() &&
+      !ownedTokenIds.has(i.tokenId.toString())
+    ) {
+      myownItems.push(item);
+      ownedTokenIds.add(i.tokenId.toString());
+    }
+  }
+
+  setListedItems(listedItems);
+  setMyownItems(myownItems);
+  setLoading(false);
+}, [marketplace, nft, account]);
+
 
   const cancelListing = async (itemId) => {
   if (!marketplace) return;
@@ -57,7 +71,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
     const tx = await marketplace.cancelItem(itemId);
     await tx.wait();
     alert("Listing cancelled successfully 🎉");
-    loadListedItems(); // refresh UI
+    loadListedItems();
   } catch (err) {
     console.error(err);
     alert("Cancel failed: " + (err?.data?.message || err.message));
@@ -79,7 +93,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
     <div className='bids section__padding'>
           <div className="bids-container">
             <div className="bids-container-text">
-              <h1>MY MINT ITEMS</h1>
+              <h1>MY LISTED ITEMS</h1>
             </div>
     
             {listedItems.length > 0 ? (
@@ -126,12 +140,12 @@ export default function MyListedItems({ marketplace, nft, account }) {
           </div>
           <div className="bids-container">
             <div className="bids-container-text">
-              <h1>MY SOLD ITEMS</h1>
+              <h1>MY OWN ITEMS</h1>
             </div>
     
-            {soldItems.length > 0 ? (
+            {myownItems.length > 0 ? (
             <div className="pursha-container-card">
-                                {soldItems.map((item) => (
+                                {myownItems.map((item) => (
                                   <div class="pur-card" key={item.itemId.toString()}>
                                     <div class="pur-tilt">
                                      <div class="pur-img"><img src={item.image} alt="Premium Laptop" /></div>

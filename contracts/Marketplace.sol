@@ -81,6 +81,7 @@ contract Marketplace is ReentrancyGuard {
             _price,
             payable(msg.sender),
             false,
+            
             false,
             block.timestamp,
             address(0),
@@ -179,7 +180,6 @@ contract Marketplace is ReentrancyGuard {
         require(item.isAuction, "Not auction item");
         require(block.timestamp < item.endTime, "Auction ended");
         require(msg.value > item.highestBid, "Bid too low");
-        require(!item.sold, "Already finalized");
 
         // Refund previous bidder
         if (item.highestBidder != address(0)) {
@@ -198,7 +198,6 @@ contract Marketplace is ReentrancyGuard {
 
         require(item.isAuction, "Not auction item");
         require(block.timestamp >= item.endTime, "Auction not ended");
-        require(!item.sold, "Already finalized");
 
         item.sold = true;
 
@@ -206,6 +205,7 @@ contract Marketplace is ReentrancyGuard {
             uint fee = (item.highestBid * feePercent) / 100;
 
             item.seller.transfer(item.highestBid - fee);
+
             feeAccount.transfer(fee);
 
             item.nft.transferFrom(

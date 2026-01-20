@@ -18,6 +18,8 @@ const [image, setImage] = useState('')
   const [price, setPrice] = useState(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
+  const [availItem, setAvailItem] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Upload image to Pinata
@@ -69,7 +71,9 @@ const [image, setImage] = useState('')
         name,
         description,
         image,
-        price
+        price,
+        category,
+        availItem
       }
 
       const res = await axios.post(
@@ -147,7 +151,7 @@ const [image, setImage] = useState('')
           </div>
           <div className="formGroup">
             <label>Category</label>
-            <select >
+            <select onChange={e => setCategory(e.target.value)}>
                <option>Art</option>
                <option>Photography</option>
                <option>Sports</option>
@@ -158,7 +162,7 @@ const [image, setImage] = useState('')
           </div>
           <div className="formGroup">
             <label>Available Items</label>
-            <input id="create" name="create" type="text" placeholder='No of Items'/>
+            <input id="create" name="create" type="text" placeholder='No of Items' onChange={e => setAvailItem(e.target.value)}/>
                 </div>
               <button
               type="button"
