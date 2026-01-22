@@ -1,26 +1,46 @@
 
-import './loading.scss'
+import './loading.css'
 
-const Loading = () => {
+const Loading = ({content}) => {
   return (
-    <div classname='loading-container'>
-    <svg class="loading-finny scroll fade scrolled" viewBox="-1 -1 12 8">
-  <defs>
-    <path id="infinite" d="M5 3C4 2 3.1 1 2 1a2 2  0 000 4c1.1 0 2-1 3-2s1.9-2  3-2a2 2 0 010 4C6.9  5 6 4 5 3"></path>
-    <radialGradient id="sgrad" gradientUnits="userSpaceOnUse" cx="5" cy="3" r="3.4">
-      <stop offset=".25" stop-color="#000"></stop>
-      <stop offset=".9" stop-color="#000" stop-opacity="0"></stop>
-    </radialGradient>
-    <path id="shad1" class="loading-clip-shadow" d="M4.5 2.5C3.7 1.7 2.9 1 2 1m6 4c-1 0-1.7-.7-2.5-1.5"></path>
-  </defs>
-  <use href="#infinite" class="loading-fbottom"></use>
-  <use href="#shad1" class="loading-shad even" />
-  <g class="loading-shad odd">
-    <use href="#shad1" transform="translate(0 6) scale(1 , -1)" />
-  </g>
-  <use href="#infinite" class="loading-ll"></use>
-</svg>
-</div>
+    
+
+      <main className='loading-container'>
+	<svg class="lp" viewBox="0 0 128 128" width="128px" height="128px" xmlns="http://www.w3.org/2000/svg">
+		<defs>
+			<linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+				<stop offset="0%" stop-color="#000" />
+				<stop offset="100%" stop-color="#fff" />
+			</linearGradient>
+			<mask id="mask1">
+				<rect x="0" y="0" width="128" height="128" fill="url(#grad1)" />
+			</mask>
+		</defs>
+		<g fill="none" stroke-linecap="round" stroke-width="16">
+			<circle class="lp__ring" r="56" cx="64" cy="64" stroke="#ddd" />
+			<g stroke="hsl(183,90%,40%)">
+				<polyline class="lp__fall-line" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay1" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay2" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay3" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay4" points="64,8 64,120" />
+				<circle class="lp__drops" r="56" cx="64" cy="64" transform="rotate(90,64,64)" />
+				<circle class="lp__worm" r="56" cx="64" cy="64" transform="rotate(-90,64,64)" />
+			</g>
+			<g stroke="hsl(93,90%,40%)" mask="url(#mask1)">
+				<polyline class="lp__fall-line" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay1" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay2" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay3" points="64,8 64,120" />
+				<polyline class="lp__fall-line lp__fall-line--delay4" points="64,8 64,120" />
+				<circle class="lp__drops" r="56" cx="64" cy="64" transform="rotate(90,64,64)" />
+				<circle class="lp__worm" r="56" cx="64" cy="64" transform="rotate(-90,64,64)" />
+			</g>
+		</g>
+	</svg>
+   <h1>{content}</h1>
+</main>
+   
   )
 }
 

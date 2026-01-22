@@ -1,5 +1,5 @@
 import { useState, useEffect,useCallback } from 'react';
-import {Bids, Header, } from '../../components';
+import {Bids, Header, Loading} from '../../components';
 
 
 
@@ -52,9 +52,7 @@ const Home = ({ marketplace, nft, account }) => {
     loadMarketplaceItems()
   }, [loadMarketplaceItems])
   if (loading) return (
-    <main style={{ padding: "1rem 0" }}>
-      <h2>LoadingHome...</h2>
-    </main>
+    <Loading content="Loading Home" />
   )
 
   return (

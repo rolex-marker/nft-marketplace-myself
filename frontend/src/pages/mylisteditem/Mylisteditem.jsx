@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from 'react-router-dom';
-import { ethers } from 'ethers'
+import { ethers } from 'ethers';
+
+import {Loading} from '../../components';
 
 import './Mylisteditem.css'
 import '../purchasedItem/purchasedItem1.css'
@@ -83,9 +85,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
   }, [loadListedItems])
 
   if (loading) return (
-    <main style={{ padding: "1rem 0" }}>
-      <h2>Loading...</h2>
-    </main>
+    <Loading content="Mylisteditem Page Loading"/>
   )
 
   return (

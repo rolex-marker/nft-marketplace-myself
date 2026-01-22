@@ -110,7 +110,7 @@ function App() {
       <Navbar loginWithMetaMask={loginWithMetaMask} account={account} form={form}/>
       <div>
         {loading ? (
-          <Loading />
+          <Loading content="Connect with Metamask"/>
         ) : (
           <Routes>
             <Route path="/" element={<Home marketplace={marketplace} nft={nft} account={account} />} />

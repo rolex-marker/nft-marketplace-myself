@@ -4,6 +4,8 @@ import './purchasedItem1.css'
 import './purchasedItem.css'
 import { Link } from 'react-router-dom';
 
+import {Loading} from '../../components';
+
 export default function MyPurchases({ marketplace, nft, account }) {
     const [ loading, setLoading ] = useState(true);
     const [ purchases, setPurchases ] = useState([]);
@@ -45,9 +47,7 @@ export default function MyPurchases({ marketplace, nft, account }) {
     }, [loadPurchasedItems]);
 
     if(loading) return (
-        <main style = {{ padding: "lrem 0"}}>
-            <h2>Loading...</h2>
-        </main>
+        <Loading content="Purchased Page Loading"/>
     )
     return (
     <div className='pursha section__padding'>
