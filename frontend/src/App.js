@@ -59,7 +59,6 @@ function App() {
        }).then(res => {
        if (res.data) {
         setForm(res.data);
-        console.log(res.data)
       }
     });
       } else {

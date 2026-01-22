@@ -16,7 +16,6 @@ const Menu = () => (
 );
 
 const Navbar = ({ loginWithMetaMask, account, form }) => {
-  console.log("form??", form);
   const [toggleMenu, setToggleMenu] = useState(false);
 
   return (

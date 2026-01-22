@@ -9,7 +9,17 @@ const UserSchema = new mongoose.Schema({
   },
   username: String,
   bio: String,
-  avatar: String, // image URL or IPFS
+  avatar: String,
+
+  totalSpent: {
+    type: Number,
+    default: 0,
+  },
+  totalBought: {
+    type: Number,
+    default: 0,
+  },
 }, { timestamps: true });
 
-export default mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+export default User;

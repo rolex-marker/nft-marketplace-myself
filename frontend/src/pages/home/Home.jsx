@@ -16,7 +16,6 @@ const Home = ({ marketplace, nft, account }) => {
     for (let i = 1; i <= itemCount; i++) {
        
       const item = await marketplace.items(i)
-       await console.log("owner>>>", item);
       if (!item.sold && !item.isAuction) {
         // get uri url from nft contract
         const uri = await nft.tokenURI(item.tokenId);
@@ -31,6 +30,7 @@ const Home = ({ marketplace, nft, account }) => {
           totalPrice,
           itemId: item.itemId,
           seller: item.seller,
+          tokenId: item.tokenId,
           name: metadata.name,
           description: metadata.description,
           image: metadata.image,
