@@ -22,8 +22,13 @@
     "dotenv": "^17.2.3",
     "ethers": "^5.8.0",
     "express": "^5.2.1",
+    "framer-motion": "^12.29.0",
     "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.562.0",
     "mongoose": "^9.1.4",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^7.3.1"
   }
 }
