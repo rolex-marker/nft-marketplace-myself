@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react"
 import AuctionCard from "../auctionCard/AuctionCard"
-import { loadAuctionItems } from "../users/loadMarketplaceItems"
+import { loadAuctionItems } from "../users/loadMarketplaceItems";
+
+import './auctions.css'
 
 export default function Auctions({ marketplace, nft, account }) {
   const [auctions, setAuctions] = useState([])
@@ -42,7 +44,7 @@ export default function Auctions({ marketplace, nft, account }) {
   return (
     <div>
 
-      {auctions.length === 0 && <p>No auctions found</p>}
+      {auctions.length === 0 && <div className="auction-no"><h1>No found Auctions</h1></div>}
 
       {auctions.map(item => (
         <AuctionCard

@@ -10,3 +10,5 @@ export {default as Marketing} from './marketing/Marketing';
 export {default as CreateAuction} from './createAuction/CreateAuction';
 export {default as AuctionCard} from './auctionCard/AuctionCard';
 export {default as Auctions} from './auctions/Auctions';
+export {default as ListedItemCard} from './listedCard/ListedCard';
+// export {default as Landing} from './landing/Landing';

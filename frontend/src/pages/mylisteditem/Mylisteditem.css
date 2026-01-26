@@ -84,6 +84,14 @@ font-weight: normal;
   line-height: 21px;
 }
 
+.offers-section {
+  color : white;
+  height: 100px;
+  overflow: scroll;
+  scrollbar-width: thin;
+  position: relative;
+}
+
 @media screen and (max-width: 1440px) {
   .card-column {
     width: 25%;

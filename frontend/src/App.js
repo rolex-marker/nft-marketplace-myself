@@ -5,8 +5,9 @@ import axios from 'axios';
 
 import './App.css';
 import { Navbar, Footer, Loading } from './components';
-import { Home, Profile, Item, Create, Login, Register, Mylisteditem, PurchasedItem, Marketing, Auctions, CreateAuction } from './pages';
+import { Home, Profile, Item, Create, Login, Register, Mylisteditem, PurchasedItem, Marketing, Auctions, CreateAuction} from './pages';
 import { Routes, Route } from "react-router-dom";
+
 
 import MarketplaceAbi from './contractsData/Marketplace.json';
 import MarketplaceAddress from './contractsData/Marketplace-address.json';
@@ -59,7 +60,6 @@ function App() {
        }).then(res => {
        if (res.data) {
         setForm(res.data);
-        console.log(res.data)
       }
     });
       } else {
@@ -110,9 +110,10 @@ function App() {
       <Navbar loginWithMetaMask={loginWithMetaMask} account={account} form={form}/>
       <div>
         {loading ? (
-          <Loading />
+          <Loading content="Connect with Metamask"/>
         ) : (
           <Routes>
+          
             <Route path="/" element={<Home marketplace={marketplace} nft={nft} account={account} />} />
             <Route path="/itemDetail" element={<Item marketplace={marketplace} nft={nft} account={account} />} />
             <Route path="/create" element={<Create marketplace={marketplace} nft={nft} account={account} />} />
