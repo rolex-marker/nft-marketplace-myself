@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Filter, Search, SlidersHorizontal } from 'lucide-react';
 import NFTCard from './NFTCard';
 import { mockNFTs, NFT } from '../mockData';
@@ -7,8 +8,8 @@ import { mockNFTs, NFT } from '../mockData';
 const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [saleTypeFilter, setSaleTypeFilter] = useState<'all' | false | true >('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | false | true >('all');
-  const [sortBy, setSortBy] = useState<'recent' | 'lowPrice' >('recent');
+  const [statusFilter, setStatusFilter] = useState<'all' | false | true >(false);
+  const [sortBy, setSortBy] = useState<'recent' | 'lowPrice'| 'expensivePrice' >('recent');
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
@@ -52,7 +53,6 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
       }
       setLoading(false)
       setItems(items)
-      console.log("HomeItmes>>>", items);
     }, [marketplace, nft]);
 
     useEffect(() => {
@@ -88,6 +88,11 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
         const priceA = a.totalPrice  || 0;
         const priceB = b.totalPrice  || 0;
         return priceA - priceB;
+      }
+      if (sortBy === 'expensivePrice') {
+        const priceA = a.totalPrice  || 0;
+        const priceB = b.totalPrice  || 0;
+        return priceB - priceA;
       }
       return 0; // recent (default order)
     });
@@ -167,8 +172,8 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
                 <div className="space-y-2">
                   {[
                     { value: 'all', label: 'All' },
-                    { value: false, label: 'Available' },
-                    { value: true, label: 'Sold' }
+                     { value: false, label: 'Available' },
+                     { value: true, label: 'Sold' },
                   ].map((option) => (
                     <button
                       // key={option.value}
@@ -191,7 +196,8 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
                 <div className="space-y-2">
                   {[
                     { value: 'recent', label: 'Recently Listed' },
-                    { value: 'lowPrice', label: 'Lowest Price' }
+                    { value: 'lowPrice', label: 'Lowest Price' },
+                    { value: 'expensivePrice', label: 'Highest Price' }
                   ].map((option) => (
                     <button
                       key={option.value}
@@ -221,7 +227,7 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
                 <p className="text-gray-600">Try adjusting your filters or search term</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredNFTs.map((nft, index) => (
                   <motion.div
                     key={nft.itemId}

@@ -1,0 +1,15 @@
+.page-transaction_container-tatal {
+    border-radius: 20px;
+    padding: 5px;
+}
+.page-transaction_container{
+    width: 40%;
+    position: absolute;
+    top: 50px;
+    right: 30px;
+    height: 216px;
+    overflow: scroll;
+    scrollbar-width: none;
+    border-radius: 20px;
+    box-sizing: border-box;
+}

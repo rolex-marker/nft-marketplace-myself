@@ -19,6 +19,14 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  favorites: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "NFT",
+    required: false,
+  },
+],
+
 }, { timestamps: true });
 
 const User = mongoose.model("User", UserSchema);

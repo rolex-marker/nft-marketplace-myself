@@ -13,6 +13,7 @@ import ItemDetailPage from './components/ItemDetailPage';
 import CreateNFTPage from './components/CreateNFTPage';
 import MyListedItemsPage from './components/MyListedItemsPage';
 import ProfilePage from './components/ProfilePage';
+import Profile from './components/Profile';
 
 import MarketplaceAbi from './contractsData/Marketplace.json';
 import MarketplaceAddress from './contractsData/Marketplace-address.json';
@@ -126,10 +127,11 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/marketplace" element={<MarketplacePage marketplace={marketplace} nft={nft} account={account}/>} />
-            <Route path="/nft/:id" element={<ItemDetailPage marketplace={marketplace} nft={nft} account={account}/>} />
+            <Route path="/nft/:id/:time" element={<ItemDetailPage marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/create" element={<CreateNFTPage marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/my-items" element={<MyListedItemsPage marketplace={marketplace} nft={nft} account={account}/>} />
             <Route path="/profile" element={<ProfilePage marketplace={marketplace} nft={nft} account={account} formFir = {form} reloadUserinfor = {reloadUserinfor}/>} />
+            <Route path="/profileedit" element={<Profile marketplace={marketplace} nft={nft} account={account} formFir = {form} reloadUserinfor = {reloadUserinfor}/>} />
           </Routes>
           )}
         </div>

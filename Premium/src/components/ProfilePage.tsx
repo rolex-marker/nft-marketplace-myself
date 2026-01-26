@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { User, Sparkles, ShoppingBag, Tag, TrendingUp, Copy, ExternalLink } from 'lucide-react';
+import axios from "axios";
+import { User, Sparkles, ShoppingBag, Tag, TrendingUp, Copy, ExternalLink, CheckCircle } from 'lucide-react';
 import NFTCard from './NFTCard';
 import { mockNFTs, mockUser, shortenAddress } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
+import './ProfilePage.css';
 
-const ProfilePage: React.FC = () => {
+interface ProfilePageProps {
+  marketplace: any
+  nft: any
+  account: string
+}
+
+
+const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) => {
   const { address, isConnected } = useWallet();
   const [activeTab, setActiveTab] = useState<'created' | 'listed' | 'purchased' | 'offers'>('created');
   const [toast, setToast] = useState<{ message: string; type: ToastType; visible: boolean }>({
@@ -15,24 +24,85 @@ const ProfilePage: React.FC = () => {
     visible: false
   });
 
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <User className="w-12 h-12 text-gray-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Wallet</h2>
-          <p className="text-gray-600">Please connect your wallet to view your profile</p>
-        </div>
-      </div>
-    );
-  }
+   const [loading, setLoading] = useState(true);
+  const [totalListedItems, setTotalListedItems] = useState([]);
+  const [myNFTs, setMyNFTs] = useState([]);
+  const [createdNFTs, setCreatedNFTs] = useState([]);
+  const [listedNFTs, setListedNFTs] = useState([]);
+  const [purchasedNFTs, setPurchasedNFTs] = useState([]);
+  const [listed, setListed] = useState([]);
+  const [myOwn, setMyOwn] = useState([]);
+  const [form, setForm] = useState({});
+  const [transactions, setTransactions] = useState({});
 
-  const createdNFTs = mockNFTs.filter((nft) => nft.creator === address);
-  const listedNFTs = mockNFTs.filter((nft) => nft.owner === address && nft.status === 'active');
-  const purchasedNFTs = mockNFTs.filter((nft) => nft.owner === address && nft.creator !== address);
+  const token = localStorage.getItem("token");
+  
+  const loadListedItems = useCallback(async () => {
+      if (!marketplace || !nft || !account) return;
+  
+      setLoading(true); // start loading
+  
+      const itemCount = await marketplace.itemCount();
+      let listed = [];
+      let myOwn = [];
+      let items = [];
+      const ownedTokenIds = new Set();
+  
+      for (let idx = 1; idx <= itemCount; idx++) {
+        const i = await marketplace.items(idx);
+        const uri = await nft.tokenURI(i.tokenId);
+        const owner = await nft.ownerOf(i.tokenId);
+        const metadata = await fetch(uri).then(res => res.json());
+        const totalPrice = await marketplace.getTotalPrice(i.itemId);
+  
+        const item = {
+          totalPrice,
+          price: i.price,
+          itemId: i.itemId,
+          tokenId: i.tokenId,
+          seller: i.seller,
+          name: metadata.name,
+          description: metadata.description,
+          image: metadata.image,
+          sold: i.sold,
+          isAuction: i.isAuction,
+          endTime: i.endTime
+        };
+        items.push(item);
+        // 🔵 My active listings
+        if (i.seller.toLowerCase() === account.toLowerCase() && !i.sold) {
+          listed.push(item);
+        }
+  
+        // 🟢 NFTs I currently own
+        if (owner.toLowerCase() === account.toLowerCase() && !ownedTokenIds.has(i.tokenId.toString())) {
+          myOwn.push(item);
+          ownedTokenIds.add(i.tokenId.toString());
+        }
+      }
+      setMyOwn(myOwn);
+      setListed(listed);
+        setTotalListedItems(items);
+        const myItems = items.filter(
+          (nft) => nft.seller.toLowerCase() === account.toLowerCase()
+        )
+        setMyNFTs(myItems);
+        setCreatedNFTs(myItems);
+        setListedNFTs( myItems.filter((nft) => nft.sold === false ));
+        setPurchasedNFTs(myItems.filter((nft) => nft.isAuction === true));
+        console.log("totalListedItem>>>", items)
+        setLoading(false)
+    }, [marketplace, nft, account]);
+  
+    useEffect(() => {
+      loadListedItems();
+    }, []);
 
+ 
+
+  
+
+  
   const getCurrentNFTs = () => {
     switch (activeTab) {
       case 'created':
@@ -40,7 +110,7 @@ const ProfilePage: React.FC = () => {
       case 'listed':
         return listedNFTs;
       case 'purchased':
-        return purchasedNFTs;
+        return myOwn;
       case 'offers':
         return [];
       default:
@@ -60,9 +130,28 @@ const ProfilePage: React.FC = () => {
   const tabs = [
     { id: 'created' as const, label: 'Created', count: createdNFTs.length, icon: Sparkles },
     { id: 'listed' as const, label: 'Listed', count: listedNFTs.length, icon: ShoppingBag },
-    { id: 'purchased' as const, label: 'Purchased', count: purchasedNFTs.length, icon: Tag },
+    { id: 'purchased' as const, label: 'Purchased', count: myOwn.length, icon: Tag },
     { id: 'offers' as const, label: 'Offers Made', count: 0, icon: TrendingUp }
   ];
+
+  useEffect(() => {
+      axios.get("http://localhost:4000/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+         }).then(res => {
+         if (res.data) {
+          setForm(res.data);
+          console.log("res.data>>>",res.data)
+        }})
+      axios.get("http://localhost:4000/transactions/me", {
+        headers: { Authorization: `Bearer ${token}` },
+         }).then(res => {
+         if (res.data) {
+          setTransactions(res.data);
+          console.log("res.data>>>",res.data)
+        }})
+    }, [token]);
+
+    if (loading) return (<main><h1>Loading myItems...</h1></main>);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,9 +167,9 @@ const ProfilePage: React.FC = () => {
             {/* Avatar */}
             <div className="relative">
               <div className="w-32 h-32 rounded-3xl bg-white shadow-2xl overflow-hidden border-4 border-white/20">
-                {mockUser.avatar ? (
+                {form.avatar ? (
                   <img 
-                    src={mockUser.avatar} 
+                    src={form.avatar} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />
@@ -99,7 +188,7 @@ const ProfilePage: React.FC = () => {
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
                 <h1 className="text-3xl md:text-4xl font-bold text-white">
-                  {shortenAddress(address!)}
+                  {shortenAddress(account!)}
                 </h1>
                 <div className="flex items-center justify-center md:justify-start gap-2">
                   <button
@@ -118,29 +207,67 @@ const ProfilePage: React.FC = () => {
                   </a>
                 </div>
               </div>
-              {mockUser.bio && (
+              {form.bio && (
                 <p className="text-lg text-white/90 max-w-2xl mb-6">
-                  {mockUser.bio}
+                  {form.bio}
                 </p>
               )}
               
               {/* Stats */}
               <div className="flex flex-wrap justify-center md:justify-start gap-6">
                 <div className="text-center md:text-left">
-                  <p className="text-2xl font-bold text-white">{mockUser.nftsCreated}</p>
-                  <p className="text-sm text-white/80">NFTs Created</p>
+                  <p className="text-2xl font-bold text-white">{form.username}</p>
+                  <p className="text-sm text-white/80">Name</p>
                 </div>
                 <div className="w-px bg-white/20" />
                 <div className="text-center md:text-left">
-                  <p className="text-2xl font-bold text-white">{mockUser.nftsSold}</p>
-                  <p className="text-sm text-white/80">NFTs Sold</p>
+                  <p className="text-2xl font-bold text-white">{form.totalBought}</p>
+                  <p className="text-sm text-white/80">Total Bought</p>
                 </div>
                 <div className="w-px bg-white/20" />
                 <div className="text-center md:text-left">
-                  <p className="text-2xl font-bold text-white">{mockUser.totalEarned} ETH</p>
-                  <p className="text-sm text-white/80">Total Earned</p>
+                  <p className="text-2xl font-bold text-white">{form.totalSpent} ETH</p>
+                  <p className="text-sm text-white/80">Total Spend</p>
                 </div>
               </div>
+
+               {/* Transaction History */}
+            
+            <div className='page-transaction_container'>
+            <div className="bg-white rounded-2xl p-6 border border-gray-200 ">
+              <h3 className="font-semibold text-gray-900 mb-4">Transaction History</h3>
+              <div className="space-y-4">
+                {transactions.map((tx) => (
+                  <div key={tx._id} className="flex items-start space-x-4 pb-4 border-b border-gray-100 last:border-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 capitalize">{tx.type}</p>
+                      <p className="text-sm text-gray-600">
+                        {tx.seller && `From ${shortenAddress(tx.seller)}`}
+                        {tx.buyer && ` to ${shortenAddress(tx.buyer)}`}
+                      </p>
+                      {tx.price && (
+                        <p className="text-sm font-semibold text-purple-600">{tx.price} ETH</p>
+                      )}
+                    </div>
+                    <a
+                      href={`https://etherscan.io/tx/${tx.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+            </div>
+            
+            
+
             </div>
           </div>
         </div>
@@ -200,7 +327,7 @@ const ProfilePage: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {currentNFTs.map((nft, index) => (
               <motion.div
                 key={nft.id}

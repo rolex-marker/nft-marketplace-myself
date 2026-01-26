@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ethers } from "ethers";
 import { motion } from 'framer-motion';
 import { Package, CheckCircle, Clock, XCircle } from 'lucide-react';
 import NFTCard from './NFTCard';
@@ -6,40 +7,122 @@ import { mockNFTs } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 
-const MyListedItemsPage: React.FC = () => {
-  const { address, isConnected } = useWallet();
-  const [activeTab, setActiveTab] = useState<'active' | 'sold' | 'ended'>('active');
+interface MyListedItemsPageProps {
+  marketplace: any
+  nft: any
+  account: string
+}
+
+const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft, account }) => {
+  // const { address } = useWallet();
+  const [loading, setLoading] = useState(true);
+  const [totalListedItems, setTotalListedItems] = useState([]);
+  const [myNFTs, setMyNFTs] = useState([]);
+  const [activeNFTs, setActiveNFTs] = useState([]);
+  const [soldNFTs, setSoldNFTs] = useState([]);
+  const [endedNFTs, setEndedNFTs] = useState([]);
+  const [listed, setListed] = useState([]);
+  const [myOwn, setMyOwn] = useState([]);
+  const [funLoading, setFunLoading] = useState(false);
+  
+  const [activeTab, setActiveTab] = useState<'active' | 'sold'| 'myown' | 'ended'>('active');
   const [toast, setToast] = useState<{ message: string; type: ToastType; visible: boolean }>({
     message: '',
     type: 'success',
     visible: false
   });
+  const isConnected = true; 
+ 
 
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Package className="w-12 h-12 text-gray-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Wallet</h2>
-          <p className="text-gray-600">Please connect your wallet to view your listed items</p>
-        </div>
-      </div>
-    );
-  }
+  const loadListedItems = useCallback(async () => {
+      if (!marketplace || !nft || !account) return;
+  
+      setLoading(true); // start loading
+  
+      const itemCount = await marketplace.itemCount();
+      let listed = [];
+      let myOwn = [];
+      let items = [];
+      const ownedTokenIds = new Set();
+  
+      for (let idx = 1; idx <= itemCount; idx++) {
+        const i = await marketplace.items(idx);
+        const uri = await nft.tokenURI(i.tokenId);
+        const owner = await nft.ownerOf(i.tokenId);
+        const metadata = await fetch(uri).then(res => res.json());
+        const totalPrice = await marketplace.getTotalPrice(i.itemId);
+  
+        const item = {
+          totalPrice,
+          price: i.price,
+          itemId: i.itemId,
+          tokenId: i.tokenId,
+          seller: i.seller,
+          name: metadata.name,
+          description: metadata.description,
+          image: metadata.image,
+          sold: i.sold,
+          isAuction: i.isAuction
+        };
+        items.push(item);
+        // 🔵 My active listings
+        if (i.seller.toLowerCase() === account.toLowerCase() && !i.sold) {
+          listed.push(item);
+        }
+  
+        // 🟢 NFTs I currently own
+        if (owner.toLowerCase() === account.toLowerCase() && !ownedTokenIds.has(i.tokenId.toString())) {
+          myOwn.push(item);
+          ownedTokenIds.add(i.tokenId.toString());
+        }
+      }
+      setMyOwn(myOwn);
+      setListed(listed);
+      // setListedItems(listed);
+      // setMyownItems(myOwn);
+      // after the for-loop
+        setTotalListedItems(items);
+        // derive from LOCAL items, not state
+        const myItems = items.filter(
+          (nft) => nft.seller.toLowerCase() === account.toLowerCase()
+        )
+        setMyNFTs(myItems)
+        setActiveNFTs(
+          myItems.filter((nft) => nft.sold === false && nft.isAuction === false)
+        )
+        setSoldNFTs(
+          myItems.filter((nft) => nft.sold === true && nft.isAuction === false)
+        )
+        setEndedNFTs(
+          myItems.filter((nft) => nft.isAuction === true)
+        )
+        console.log("totalListedItem>>>", items)
+        setLoading(false)
+    }, [marketplace, nft, account]);
+  
+    // ---------- call the loader on mount ----------
+    useEffect(() => {
+      loadListedItems();
+    }, []);
 
-  const myNFTs = mockNFTs.filter((nft) => nft.owner === address || nft.creator === address);
-  const activeNFTs = myNFTs.filter((nft) => nft.status === 'active');
-  const soldNFTs = myNFTs.filter((nft) => nft.status === 'sold');
-  const endedNFTs = myNFTs.filter((nft) => nft.status === 'ended');
+    
+  
 
-  const handleCancelListing = (nftId: string) => {
-    setToast({ 
+  const cancelListing = async (itemId) => {
+    if (!marketplace) return;
+    try {
+      const tx = await marketplace.cancelItem(itemId);
+      await tx.wait();
+      setToast({ 
       message: 'Listing cancelled successfully!', 
       type: 'success', 
       visible: true 
     });
+      loadListedItems(); // refresh after cancel
+    } catch (err) {
+      console.error(err);
+      alert("Cancel failed: " + (err?.data?.message || err.message));
+    }
   };
 
   const getCurrentNFTs = () => {
@@ -48,6 +131,8 @@ const MyListedItemsPage: React.FC = () => {
         return activeNFTs;
       case 'sold':
         return soldNFTs;
+      case 'myown':
+        return myOwn;
       case 'ended':
         return endedNFTs;
       default:
@@ -55,13 +140,93 @@ const MyListedItemsPage: React.FC = () => {
     }
   };
 
+  const createAuction = async (aucTokenid) => {
+      try {
+        
+         const acutionAmount = prompt("Enter Auction amount (ETH)");
+         if (!acutionAmount) return;
+         const acuDuration = prompt("Enter Auction Duration (minitues)");
+         if (!acuDuration) return;
+        setFunLoading(true)
+        
+
+        const weiPrice = ethers.utils.parseEther(acutionAmount)
+        
+  
+        // ✅ STEP 1: Check approval
+        const approvedAddress = await nft.getApproved(aucTokenid)
+  
+        if (approvedAddress.toLowerCase() !== marketplace.address.toLowerCase()) {
+          console.log("Approving NFT...")
+  
+          const approveTx = await nft.approve(marketplace.address, aucTokenid)
+          await approveTx.wait()
+        }
+  
+        // ✅ STEP 2: Create auction
+        const tx = await marketplace.makeAuctionItem(
+          nft.address,
+          aucTokenid,
+          weiPrice,
+          Number(acuDuration) * 60 // minutes → seconds
+        )
+  
+        await tx.wait()
+  
+        alert("Auction created 🎉")
+      } catch (err) {
+        console.error(err)
+        alert("Transaction failed (see console)")
+      } finally {
+        setFunLoading(false)
+      }
+    }
+  const relistNFT = async (aucTokenid) => {
+      try {
+        
+         const relistAmount = prompt("Enter Relist amount (ETH)");
+         if (!relistAmount) return;
+        setFunLoading(true)
+        
+
+        const weiPrice = ethers.utils.parseEther(relistAmount)
+        
+  
+        // ✅ STEP 1: Check approval
+        const approvedAddress = await nft.getApproved(aucTokenid)
+  
+        if (approvedAddress.toLowerCase() !== marketplace.address.toLowerCase()) {
+          console.log("Approving NFT...")
+  
+          const approveTx = await nft.approve(marketplace.address, aucTokenid)
+          await approveTx.wait()
+        }
+  
+        // ✅ STEP 2: Create auction
+        const tx = await marketplace.makeItem(nft.address, aucTokenid, weiPrice)
+  
+        await tx.wait()
+  
+        alert("Relisting NFT created 🎉")
+      } catch (err) {
+        console.error(err)
+        alert("Transaction failed (see console)")
+      } finally {
+        setFunLoading(false)
+      }
+    }
+
   const currentNFTs = getCurrentNFTs();
 
   const tabs = [
     { id: 'active' as const, label: 'Active', count: activeNFTs.length, icon: Clock },
     { id: 'sold' as const, label: 'Sold', count: soldNFTs.length, icon: CheckCircle },
+    { id: 'myown' as const, label: 'Myown', count: myOwn.length, icon: CheckCircle },
     { id: 'ended' as const, label: 'Ended', count: endedNFTs.length, icon: XCircle }
   ];
+
+  if (loading) return (<main><h1>Loading myItems...</h1></main>);
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -144,24 +309,40 @@ const MyListedItemsPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {currentNFTs.map((nft, index) => (
+            {currentNFTs.map((item, index) => (
               <motion.div
-                key={nft.id}
+                key={item.itemId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="relative"
               >
-                <NFTCard nft={nft} />
+                <NFTCard nft={item} />
                 
                 {/* Action Buttons */}
                 {activeTab === 'active' && (
                   <div className="mt-3 space-y-2">
                     <button
-                      onClick={() => handleCancelListing(nft.id)}
+                      onClick={() => cancelListing(item.itemId)}
                       className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:border-red-300 hover:bg-red-50 hover:text-red-700 transition-all"
                     >
                       Cancel Listing
+                    </button>
+                  </div>
+                )}
+                {activeTab === 'myown' && (
+                  <div className="mt-3 space-y-2">
+                    <button
+                      onClick={() => relistNFT(item.tokenId)}
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:border-green-300 hover:bg-green-50 hover:text-green-700 transition-all"
+                    >
+                      Again Listing
+                    </button>
+                    <button
+                      onClick={() => createAuction(item.tokenId)}
+                      className="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:border-green-400 hover:bg-green-50 hover:text-green-700 transition-all"
+                    >
+                      Making Auction
                     </button>
                   </div>
                 )}

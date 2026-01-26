@@ -64,10 +64,11 @@ const Header: React.FC = ({ loginWithMetaMask, account, form }) => {
                 //   <Wallet className="w-4 h-4" />
                 //   <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
                 // </button>
-                <Link to="/profile">
+                <Link to="/profileedit">
                   <div className="nav-avatar_information">
                   <img className='nav-avatar' src={form.avatar} alt="people"/>
                    {/* <span className='nav-username'> {form.username}</span> */}
+                   <span className='nav-username'> {account.slice(2, 6)}...{account.slice(-4)}</span>
                   </div>
                   </Link>
               ) : (

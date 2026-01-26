@@ -7,6 +7,8 @@ import { ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import NFTCard from './NFTCard';
 import { mockNFTs, topSellers, shortenAddress } from '../mockData';
 
+import './HomePage.css';
+
 const HomePage = ({ marketplace, nft, account }) => {
   const trendingNFTs = mockNFTs.filter(nft => nft.status === 'active').slice(0, 4);
   const auctionNFTs = mockNFTs.filter(nft => nft.saleType === 'auction' && nft.status === 'active').slice(0, 3);
@@ -53,7 +55,7 @@ const HomePage = ({ marketplace, nft, account }) => {
       setLoading(false)
       setItems(items)
       setTrendingitems(items.slice(0, 4));
-      setAuctionitems(items.filter(item => item.isAuction === true).slice(0, 3));
+      setAuctionitems(items.filter(item => item.isAuction === true).slice(0, 4));
       console.log("homeitems>>>", auctionitems);
     }, [marketplace, nft])
   
@@ -202,7 +204,7 @@ const HomePage = ({ marketplace, nft, account }) => {
               </div>
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total Sold</span>
+                  <span className="text-sm text-gray-600">Total Spent</span>
                   <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     {seller.totalSpent} ETH
                   </span>
@@ -227,7 +229,7 @@ const HomePage = ({ marketplace, nft, account }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {auctionitems.map((nft) => (
             <NFTCard key={nft.itemId} nft={nft} />
           ))}

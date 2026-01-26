@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from "axios";
+import { ethers, BigNumber } from 'ethers';
 import { motion } from 'framer-motion';
 import { 
   ShoppingCart, 
@@ -18,73 +20,348 @@ import { useWallet } from '../WalletContext';
 import PlaceBidModal from './modals/PlaceBidModal';
 import MakeOfferModal from './modals/MakeOfferModal';
 import Toast, { ToastType } from './Toast';
+import useCountdown from "./api/useCountdown";
 
-const ItemDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+
+// types.ts (or top of file)
+
+export interface BlockchainItem {
+  itemId: number;
+  seller: string;
+  tokenId: string;
+  totalPrice: ethers.BigNumber;
+  name: string;
+  description: string;
+  image: string;
+  sold: boolean;
+  category: string;
+
+  nft: any;
+  endTime: number;
+  highestBid: any;
+  highestBidder: string;
+  isAuction: boolean;
+}
+
+interface ItemDetailPageProps {
+  marketplace: any; // ethers.Contract (keep any to avoid ABI typing hell)
+  nft: any;         // ethers.Contract
+  account: string | null;
+}
+
+
+
+const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, account }) => {
+  const { id, time } = useParams<{ id: string, time: string }>();
+  console.log("id, time", id , time );
   const { isConnected, address } = useWallet();
   const [showBidModal, setShowBidModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [toast, setToast] = useState<{ message: string; type: ToastType; visible: boolean }>({
     message: '',
     type: 'success',
     visible: false
   });
 
-  const nft = mockNFTs.find((n) => n.id === id);
-  const offers = mockOffers.filter((o) => o.nftId === id);
-  const isOwner = address && nft && address === nft.owner;
+  const token = localStorage.getItem("token");
 
-  if (!nft) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">NFT Not Found</h2>
-          <Link to="/marketplace" className="text-purple-600 hover:text-purple-700">
-            Return to Marketplace
-          </Link>
-        </div>
-      </div>
+  const [loading, setLoading] = useState<boolean>(true);
+  const [item, setItem] = useState<BlockchainItem | null>(null);
+  const [seller, setSeller] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isofferLoading, setIsofferLoading] = useState<boolean>(false);
+  
+  const [endTime, setEndTime] = useState<number>(0);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [auctionEnded, setAuctionEnded] = useState<boolean>(false);
+  const [isOwner, setIsOwner] = useState<boolean>(false);
+  const [isHighestBidder, setIsHighestBidder] = useState<boolean>(false);
+  const [highestBidFormatted, setHighestBidFormatted] = useState();
+  const [priceFormatted, setPriceFormatted] = useState();
+
+  const [offers, setOffers] = useState([]);
+    // Load offers for this item
+    const loadOffers = async () => {
+      setIsofferLoading(true);
+      if (!marketplace || !id) {
+        setIsofferLoading(false);
+        return;
+      }
+      try {
+        const data = await marketplace.getOffers(id);
+        // Convert BigNumber to number
+        const parsedOffers = data.map(o => ({
+          buyer: o.buyer,
+          amount: o.amount.toString(),
+          accepted: o.accepted
+        }));
+        console.log("parsedOffers>>>", parsedOffers)
+        setOffers(parsedOffers);
+        setIsofferLoading(false);
+      } catch (err) {
+        console.error("Failed to load offers:", err);
+      } finally {    
+      }
+    };
+  
+    
+  
+    // Accept offer
+    const acceptOffer = async (index) => {
+      if (!marketplace) return;
+      try {
+        const tx = await marketplace.acceptOffer(item?.itemId, index);
+        const receipt = await tx.wait();
+        alert("Offer accepted successfully 🎉");
+  
+        const acceptedOffer = offers[index];
+        await axios.post(
+            "http://localhost:4000/transactions",
+            {
+              itemId: item?.itemId,
+              tokenId: item?.tokenId,
+              price: ethers.utils.formatEther(acceptedOffer.amount),
+              seller: account,
+              buyer: acceptedOffer.buyer,
+              type: "OFFER",
+              txHash: receipt.transactionHash
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          console.log("Offer transaction recorded in backend ✅");
+        // reloadItems(); // Refresh items
+        loadOffers();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to accept offer: " + (err?.data?.message || err.message));
+      }
+    };
+  
+
+  
+
+  
+
+  const phurchase = async () => {
+  if (isSubmitting) return;
+
+  setIsSubmitting(true);
+  try {
+    const totalPrice = await marketplace.getTotalPrice(item?.itemId);
+
+    // 1️⃣ Execute purchase
+    const tx = await marketplace.purchaseItem(item?.itemId, {
+      value: totalPrice,
+    });
+
+    // 2️⃣ Wait for confirmation
+    const receipt = await tx.wait();
+
+    // 3️⃣ Send transaction to backend
+    
+
+    await axios.post(
+      "http://localhost:4000/transactions/",
+      {
+        itemId: item?.itemId,
+        tokenId: item?.tokenId || null,
+        price: ethers.utils.formatEther(totalPrice),
+        seller: item?.seller,
+        buyer: account,
+        type: "BUY",
+        txHash: receipt.transactionHash,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
-  }
 
-  const getTimeRemaining = (endTime?: Date) => {
-    if (!endTime) return null;
-    const now = new Date().getTime();
-    const end = new Date(endTime).getTime();
-    const diff = end - now;
-
-    if (diff <= 0) return 'Auction Ended';
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds };
-  };
-
-  const handleBuyNow = () => {
-    if (!isConnected) {
-      setToast({ message: 'Please connect your wallet first', type: 'error', visible: true });
-      return;
-    }
     setToast({ message: 'Purchase successful! NFT transferred to your wallet.', type: 'success', visible: true });
+
+  } catch (err) {
+    console.error(err);
+    alert("Purchase failed: " + (err?.data?.message || err.message));
+  } finally {
+    setIsSubmitting(false);
+  }
   };
 
-  const handlePlaceBid = (amount: number) => {
-    setToast({ 
+  const makeOffer = async ( mount: number) => {
+      if (!marketplace || !item) return;
+     
+      let amount = mount.toString();
+      setIsSubmitting(true);
+      try {
+        await (await marketplace.makeOffer(item.itemId, {
+          value: ethers.utils.parseEther(amount)
+        })).wait();
+  
+        
+        setToast({ 
+          message: `Offer of ${amount} ETH submitted successfully!`, 
+          type: 'success', 
+          visible: true 
+        });
+      } catch(err) {
+        console.error(err);
+        alert("Offer failed: " + (err?.data?.message || err.message));
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+  
+
+  const loadItem = async () => {
+  try {
+    const itemId = Number(id);
+    
+    if (!itemId) return;
+
+    const itemData = await marketplace.items(itemId);
+    const uri = await nft.tokenURI(itemData.tokenId);
+    const metadata = await fetch(uri).then(res => res.json());
+    const totalPrice = await marketplace.getTotalPrice(itemId);
+
+    setItem({
+      itemId,
+      seller: itemData.seller,
+      tokenId: itemData.tokenId.toString(),
+      totalPrice,
+      name: metadata.name,
+      description: metadata.description,
+      image: metadata.image,
+      category: metadata.category,
+      sold: itemData.sold,
+      nft: itemData.nft,
+      endTime: itemData.endTime.toNumber(),
+      highestBid: itemData.highestBid,
+      highestBidder: itemData.highestBidder,
+      isAuction: itemData.isAuction
+    });
+    
+    setSeller(itemData.seller);
+
+     setEndTime(itemData.endTime.toNumber());
+
+     console.log("itemData>>>",itemData);
+     console.log("account>>>",account);
+
+
+  //     let middletimeLeft = useCountdown(endTime);
+  // setTimeLeft(middletimeLeft);
+  // setAuctionEnded(timeLeft <= 0);
+
+  setIsOwner(itemData.seller && account &&itemData.seller.toLowerCase() === account.toLowerCase());
+
+ setIsHighestBidder(
+    itemData.highestBidder &&
+    itemData.highestBidder !== ethers.constants.AddressZero &&
+    account &&
+    itemData.highestBidder.toLowerCase() === account.toLowerCase());
+
+
+  setHighestBidFormatted(itemData.highestBid
+    ? ethers.utils.formatEther(itemData.highestBid)
+    : 
+  "0");
+  setPriceFormatted(totalPrice ? ethers.utils.formatEther(totalPrice) : "0");
+
+  console.log(endTime, timeLeft, isOwner, isHighestBidder, highestBidFormatted, priceFormatted);
+
+    
+  } catch (err) {
+    console.error("Failed to load item:", err);
+  } finally {
+    setLoading(false); 
+  }
+};
+
+useEffect(() => {
+    loadItem();
+  }, []);
+
+//acution section
+const placeBid = async (mount: number) => {
+   if (!marketplace || !item) return;
+    if (isSubmitting) return;
+
+    let amount = mount.toString();
+    
+    setIsSubmitting(true);
+    try {
+      const tx = await marketplace.placeBid(item.itemId, {
+        value: ethers.utils.parseEther(amount),
+      });
+      await tx.wait();
+      setToast({ 
       message: `Bid of ${amount} ETH placed successfully!`, 
       type: 'success', 
       visible: true 
     });
+    } catch (err) {
+      console.error(err);
+      alert("Bid failed: " + (err?.message || err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+const finalizeAuction = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const tx = await marketplace.finalizeAuction(item?.itemId);
+      const receipt = await tx.wait();
+
+      alert("Auction finalized successfully 🎉");
+
+      if (token) {
+        await axios.post(
+          "http://localhost:4000/transactions",
+          {
+            itemId: item?.itemId,
+            tokenId: item?.tokenId,
+            price: highestBidFormatted,
+            seller: item?.seller,
+            buyer: item?.highestBidder,
+            type: "AUCTION",
+            txHash: receipt.transactionHash,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        console.log("Auction transaction recorded ✅");
+      }
+    } catch (err) {
+      console.error("Auction finalization failed:", err);
+      alert("Auction finalization failed: " + (err?.message || err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+ 
+  const handleBuyNow = () => {
+     
+    if (!account) {
+      setToast({ message: 'Please connect your wallet first', type: 'error', visible: true });
+      return;
+    }
+    phurchase(item.itemId);
+    
+  };
+
+  const handlePlaceBid = (amount: number) => {
+    placeBid(amount);
   };
 
   const handleMakeOffer = (amount: number) => {
-    setToast({ 
-      message: `Offer of ${amount} ETH submitted successfully!`, 
-      type: 'success', 
-      visible: true 
-    });
+    makeOffer(amount);
   };
 
   const handleAcceptOffer = (offerId: string) => {
@@ -95,8 +372,15 @@ const ItemDetailPage: React.FC = () => {
     });
   };
 
-  const timeRemaining = getTimeRemaining(nft.auctionEndTime);
+  useEffect(() => {
+      loadOffers();
+      
+    }, [marketplace]);
 
+  
+
+  
+  if (loading || !item || isofferLoading) return <h2>Loading item...</h2>;
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back Button */}
@@ -122,8 +406,8 @@ const ItemDetailPage: React.FC = () => {
               className="relative rounded-3xl overflow-hidden bg-white border border-gray-200 shadow-xl"
             >
               <img
-                src={nft.image}
-                alt={nft.name}
+                src={item.image}
+                alt={item.name}
                 className="w-full aspect-square object-cover"
               />
               
@@ -145,69 +429,81 @@ const ItemDetailPage: React.FC = () => {
                   <Eye className="w-4 h-4" />
                   <span className="text-sm">Views</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{nft.views}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {/* {nft1.views} */}9213
+                  </p>
               </div>
               <div className="bg-white rounded-2xl p-6 border border-gray-200">
                 <div className="flex items-center space-x-2 text-gray-600 mb-1">
                   <Heart className="w-4 h-4" />
                   <span className="text-sm">Favorites</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{nft.favorites}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {/* {nft1.favorites} */}902
+                  </p>
               </div>
             </div>
           </div>
 
-          {/* Right: NFT Details */}
+          {/* Right: nft1 Details */}
           <div className="space-y-6">
             {/* Title & Category */}
             <div>
               <div className="inline-flex px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-sm font-medium mb-4">
-                {nft.category}
+                {item.category}
               </div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">{nft.name}</h1>
-              <p className="text-lg text-gray-600">{nft.description}</p>
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">{item.name}</h1>
+              <p className="text-lg text-gray-600">{item.description}</p>
             </div>
 
             {/* Owner & Creator */}
             <div className="bg-white rounded-2xl p-6 border border-gray-200 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Owner</span>
-                <span className="font-semibold text-gray-900">{shortenAddress(nft.owner)}</span>
+                <span className="font-semibold text-gray-900">{item.seller.slice(2, 6)}...{item.seller.slice(-4)}</span>
               </div>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Creator</span>
-                <span className="font-semibold text-gray-900">{shortenAddress(nft.creator)}</span>
-              </div>
+                <span className="font-semibold text-gray-900">{shortenAddress(nft1.creator)}</span>
+              </div> */}
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                 <span className="text-sm text-gray-600">Token ID</span>
-                <span className="font-mono text-sm text-gray-900">{nft.tokenId}</span>
+                <span className="font-mono text-sm text-gray-900">{item.tokenId}</span>
               </div>
             </div>
 
             {/* Auction Timer */}
-            {nft.saleType === 'auction' && nft.status === 'active' && timeRemaining !== 'Auction Ended' && (
+            {item.isAuction === true && item.sold === false &&  (
               <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center space-x-2 mb-4">
                   <Clock className="w-5 h-5" />
                   <span className="font-semibold">Auction ends in</span>
                 </div>
                 <div className="grid grid-cols-4 gap-3">
-                  {typeof timeRemaining === 'object' && (
+                  {time && (
                     <>
                       <div className="bg-white/20 rounded-xl p-3 text-center backdrop-blur-sm">
-                        <div className="text-3xl font-bold">{timeRemaining.days}</div>
+                        <div className="text-3xl font-bold">
+                         0
+                          </div>
                         <div className="text-sm text-white/80">Days</div>
                       </div>
                       <div className="bg-white/20 rounded-xl p-3 text-center backdrop-blur-sm">
-                        <div className="text-3xl font-bold">{timeRemaining.hours}</div>
+                        <div className="text-3xl font-bold">
+                         {time.slice(0,2)}
+                          </div>
                         <div className="text-sm text-white/80">Hours</div>
                       </div>
                       <div className="bg-white/20 rounded-xl p-3 text-center backdrop-blur-sm">
-                        <div className="text-3xl font-bold">{timeRemaining.minutes}</div>
+                        <div className="text-3xl font-bold">
+                         {time.slice(3,5)}
+                          </div>
                         <div className="text-sm text-white/80">Mins</div>
                       </div>
                       <div className="bg-white/20 rounded-xl p-3 text-center backdrop-blur-sm">
-                        <div className="text-3xl font-bold">{timeRemaining.seconds}</div>
+                        <div className="text-3xl font-bold">
+                          {time.slice(6,8)}
+                          </div>
                         <div className="text-sm text-white/80">Secs</div>
                       </div>
                     </>
@@ -218,12 +514,19 @@ const ItemDetailPage: React.FC = () => {
 
             {/* Price / Bid */}
             <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              {nft.saleType === 'auction' ? (
+              {item.isAuction === true ?  (
                 <>
-                  <p className="text-sm text-gray-600 mb-2">Current Bid</p>
+                  <p className="text-sm text-gray-600 mb-2">Origin Bid</p>
                   <div className="flex items-baseline space-x-2 mb-4">
                     <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      {nft.highestBid?.toFixed(2)}
+                      {highestBidFormatted ?  ethers.utils.formatEther(item.totalPrice) : highestBidFormatted }
+                    </span>
+                    <span className="text-xl text-gray-600">ETH</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Highest Auction Bidder</p>
+                  <div className="flex items-baseline space-x-2 mb-4">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                     {item.highestBidder.slice(2, 6)}...{item.highestBidder.slice(-4)}
                     </span>
                     <span className="text-xl text-gray-600">ETH</span>
                   </div>
@@ -233,7 +536,7 @@ const ItemDetailPage: React.FC = () => {
                   <p className="text-sm text-gray-600 mb-2">Price</p>
                   <div className="flex items-baseline space-x-2 mb-4">
                     <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      {nft.price?.toFixed(2)}
+                      {ethers.utils.formatEther(item.totalPrice)}
                     </span>
                     <span className="text-xl text-gray-600">ETH</span>
                   </div>
@@ -241,18 +544,21 @@ const ItemDetailPage: React.FC = () => {
               )}
 
               {/* Action Buttons */}
-              {nft.status === 'active' && !isOwner && (
+              {item.sold === false &&  (
                 <div className="grid grid-cols-1 gap-3">
-                  {nft.saleType === 'fixed' && (
-                    <button
+                  
+                   {item.isAuction === false && item.seller !== account && (<button
                       onClick={handleBuyNow}
                       className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       <span>Buy Now</span>
-                    </button>
-                  )}
-                  {nft.saleType === 'auction' && (
+                    </button>)}
+                  
+                  {item.isAuction === true && (
+                    <div>
+                    <div>
+                     {time != "AUC END" && !isOwner && (
                     <button
                       onClick={() => setShowBidModal(true)}
                       className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
@@ -260,18 +566,37 @@ const ItemDetailPage: React.FC = () => {
                       <Gavel className="w-5 h-5" />
                       <span>Place Bid</span>
                     </button>
+                    )}
+                    </div>
+                    <div>
+                     {time === "AUC END" && (
+                    <button
+                      onClick={() => finalizeAuction()}
+                      className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
+                    >
+                      <Gavel className="w-5 h-5" />
+                      <span>Finalize Auction</span>
+                    </button>
+                    )}
+                    </div>
+                    </div>
                   )}
-                  <button
+                  {item.isAuction === false && item.seller !== account &&(<button
                     onClick={() => setShowOfferModal(true)}
                     className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl border-2 border-gray-900 text-gray-900 font-semibold hover:bg-gray-900 hover:text-white transition-all"
                   >
                     <Tag className="w-5 h-5" />
                     <span>Make Offer</span>
-                  </button>
+                  </button>)}
                 </div>
               )}
-
-              {nft.status === 'sold' && (
+              
+              { isOwner  && item.isAuction === true && (
+                <div className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gray-100 text-green-600 font-semibold">
+                  <span>You are this Auction Producer</span>
+                </div>
+              )}
+              {item.sold == true && (
                 <div className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gray-100 text-gray-600 font-semibold">
                   <CheckCircle className="w-5 h-5" />
                   <span>Sold</span>
@@ -280,36 +605,40 @@ const ItemDetailPage: React.FC = () => {
             </div>
 
             {/* Offers Section */}
-            {offers.length > 0 && (
+            {offers.length > 0 &&  (
               <div className="bg-white rounded-2xl p-6 border border-gray-200">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                   <Tag className="w-5 h-5" />
                   <span>Offers ({offers.length})</span>
                 </h3>
                 <div className="space-y-3">
-                  {offers.map((offer) => (
-                    <div
-                      key={offer.id}
+                  {offers.map((offer, idx) => (
+                    <div 
+                      key={idx}
                       className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200"
                     >
                       <div>
                         <p className="font-semibold text-gray-900">
-                          {offer.amount} ETH
+                         { ethers.utils.formatEther(offer.amount)} ETH
+                          {/* {offer.amount.slice(0,5)}  */}
                         </p>
                         <p className="text-sm text-gray-600">
                           from {shortenAddress(offer.buyer)}
                         </p>
                       </div>
-                      {isOwner && offer.status === 'pending' && (
+                      { !offer.accepted  && item.seller === account && item.sold === false &&(
                         <button
-                          onClick={() => handleAcceptOffer(offer.id)}
+                          onClick={() => acceptOffer(idx)}
                           className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium hover:shadow-lg transition-all"
                         >
                           Accept
                         </button>
                       )}
-                      {offer.status !== 'pending' && (
-                        <span className="text-sm text-gray-500 capitalize">{offer.status}</span>
+                      {offer.accepted == true && (
+                        <div>
+                        <CheckCircle className="w-5 h-5" />
+                        <span className="text-sm text-gray-500 capitalize">Accepted</span>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -318,7 +647,7 @@ const ItemDetailPage: React.FC = () => {
             )}
 
             {/* Transaction History */}
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
+            {/* <div className="bg-white rounded-2xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-4">Transaction History</h3>
               <div className="space-y-4">
                 {mockTransactions.map((tx) => (
@@ -347,7 +676,7 @@ const ItemDetailPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -355,16 +684,16 @@ const ItemDetailPage: React.FC = () => {
       <PlaceBidModal
         isOpen={showBidModal}
         onClose={() => setShowBidModal(false)}
-        currentBid={nft.highestBid || 0}
-        nftName={nft.name}
-        onPlaceBid={handlePlaceBid}
+        currentBid={ethers.utils.formatEther(item.highestBid) || 0}
+        nftName={item.name}
+        handlePlaceBid={handlePlaceBid}
       />
 
       <MakeOfferModal
         isOpen={showOfferModal}
         onClose={() => setShowOfferModal(false)}
-        nftName={nft.name}
-        currentPrice={nft.price}
+        nftName={item.name}
+        currentPrice={item.price}
         onMakeOffer={handleMakeOffer}
       />
 
@@ -379,3 +708,5 @@ const ItemDetailPage: React.FC = () => {
 };
 
 export default ItemDetailPage;
+
+

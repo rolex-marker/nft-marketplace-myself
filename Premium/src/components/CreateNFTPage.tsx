@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
+import { ethers } from "ethers"
+import axios from 'axios' 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Upload, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 
-const CreateNFTPage: React.FC = () => {
+interface CreateNFTPageProps {
+  marketplace: any
+  nft: any
+  account: string
+}
+
+const PINATA_API_KEY = 'ad6c656a7f0cc603a4ef'
+const PINATA_SECRET_API_KEY =
+  'd6cd229b6cfa3e565146eeebc37bb3c14375176dd128e7f5c05ebdc830c637f8'
+
+const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account }) => {
   const navigate = useNavigate();
   const { isConnected } = useWallet();
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,46 +36,121 @@ const CreateNFTPage: React.FC = () => {
     visible: false
   });
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
+  const [image, setImage] = useState('');
+  const [price, setPrice] = useState('');
+  const [name, setName] = useState('');
+  const [duration, setDuration] = useState("");
+  const [description, setDescription] = useState('');
+  
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+  // Upload image to Pinata
+    const uploadToIPFS = async (event) => {
+      event.preventDefault()
+      const file = event.target.files[0];
+      setImagePreview(true);
+      if (!file) return
+  
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+  
+        const res = await axios.post(
+          'https://api.pinata.cloud/pinning/pinFileToIPFS',
+          formData,
+          {
+             maxBodyLength: Infinity,
+              timeout: 120000, // ⬅️ 2 minutes
+            headers: {
+              'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+              pinata_api_key: PINATA_API_KEY,
+              pinata_secret_api_key: PINATA_SECRET_API_KEY
+            }
+          }
+        )
+  
+        const url = `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`
+        console.log("IPFS URL:", url)
+        setImage(url)
+  
+      } catch (error) {
+        console.log("ipfs image upload error:", error)
+      }
     }
-  };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
+    // Upload metadata to Pinata
+      const createNFT = async () => {
+        
+    
+        if (uploading) return
 
-  const handleFile = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+         try {
+        if (!image || !price || !name || !description) return
+
+        try {
+          const metadata = {
+            name,
+            description,
+            image,
+            price
+          }
+    
+          const res = await axios.post(
+            'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+            metadata,
+            {
+              headers: {
+                pinata_api_key: PINATA_API_KEY,
+                pinata_secret_api_key: PINATA_SECRET_API_KEY
+              }
+            }
+          )
+    
+          const uri = `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`
+        if(formData.saleType === 'auction')
+        {await mintThenAuction(uri)}
+        else {await mintThenList(uri) }
+    
+        } catch (error) {
+          console.log("ipfs metadata upload error:", error)
+        }  } catch (err) {
+        console.error(err)
+      } finally {
+        setUploading(false);
+        setToast({ 
+        message: 'NFT minted successfully! Redirecting to marketplace...', 
+        type: 'success', 
+        visible: true 
+      });
+      }
+      }
+    
+    // Mint NFT and list on marketplace
+      const mintThenList = async (uri) => {
+        const tx1 = await nft.mint(uri);
+        await tx1.wait();
+        const id = await nft.tokenCount()
+        console.log("created NFTID:",id);
+        await (await nft.setApprovalForAll(marketplace.address, true)).wait()
+        const listingPrice = ethers.utils.parseEther(price.toString())
+        await (await marketplace.makeItem(nft.address, id, listingPrice)).wait()
+        
+      }
+    // Mint NFT and Auction on marketplace
+      const mintThenAuction = async (uri) => {
+        const tx1 = await nft.mint(uri);
+        await tx1.wait();
+        const id = await nft.tokenCount()
+        console.log("created NFTID:",id);
+        await (await nft.setApprovalForAll(marketplace.address, true)).wait()
+        const weiPrice = ethers.utils.parseEther(price);
+        await (await marketplace.makeAuctionItem(nft.address, id, weiPrice, Number(duration)*60 )).wait()
+      }
+    
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isConnected) {
+    if (!account) {
       setToast({ message: 'Please connect your wallet first', type: 'error', visible: true });
       return;
     }
@@ -72,22 +159,9 @@ const CreateNFTPage: React.FC = () => {
       setToast({ message: 'Please upload an image', type: 'error', visible: true });
       return;
     }
-
     setUploading(true);
-
+    createNFT();
     // Simulate minting process
-    setTimeout(() => {
-      setUploading(false);
-      setToast({ 
-        message: 'NFT minted successfully! Redirecting to marketplace...', 
-        type: 'success', 
-        visible: true 
-      });
-      
-      setTimeout(() => {
-        navigate('/marketplace');
-      }, 2000);
-    }, 3000);
   };
 
   return (
@@ -110,10 +184,6 @@ const CreateNFTPage: React.FC = () => {
               Upload File *
             </label>
             <div
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
               className={`relative rounded-2xl border-2 border-dashed transition-all ${
                 dragActive
                   ? 'border-purple-600 bg-purple-50'
@@ -125,8 +195,8 @@ const CreateNFTPage: React.FC = () => {
               {imagePreview ? (
                 <div className="relative aspect-square rounded-2xl overflow-hidden group">
                   <img
-                    src={imagePreview}
-                    alt="Preview"
+                    src={image}
+                    alt="Uploading to IPFS..."
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -135,7 +205,7 @@ const CreateNFTPage: React.FC = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleFileInput}
+                        onChange={uploadToIPFS}
                         className="hidden"
                       />
                     </label>
@@ -158,7 +228,7 @@ const CreateNFTPage: React.FC = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleFileInput}
+                    onChange={uploadToIPFS}
                     className="hidden"
                   />
                 </label>
@@ -186,8 +256,8 @@ const CreateNFTPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Enter NFT name"
                   required
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none"
@@ -200,8 +270,8 @@ const CreateNFTPage: React.FC = () => {
                   Description
                 </label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your NFT"
                   rows={4}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none resize-none"
@@ -251,8 +321,8 @@ const CreateNFTPage: React.FC = () => {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
                     placeholder="0.00"
                     required
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none"
@@ -270,32 +340,33 @@ const CreateNFTPage: React.FC = () => {
                     Auction Duration
                   </label>
                   <select
-                    value={formData.auctionDuration}
-                    onChange={(e) => setFormData({ ...formData, auctionDuration: e.target.value })}
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none"
-                  >
-                    <option value="1">1 Day</option>
-                    <option value="3">3 Days</option>
-                    <option value="7">7 Days</option>
-                    <option value="14">14 Days</option>
-                    <option value="30">30 Days</option>
+                  >  
+                    <option value="1">Set Auction Duaration</option>
+                    <option value="10">10 minutes</option>
+                    <option value="30">half hour</option>
+                    <option value="60">1 hour</option>
+                    <option value="180">3 hours</option>
+                    <option value="1339">1 Day</option>
                   </select>
                 </div>
               )}
 
               {/* Preview Card */}
-              {imagePreview && formData.name && (
+              {imagePreview && name && (
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200">
                   <h4 className="font-semibold text-gray-900 mb-3">Preview</h4>
                   <div className="bg-white rounded-xl p-4 border border-gray-200">
                     <div className="aspect-square rounded-lg overflow-hidden mb-3">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={image} alt="Preview Mint.." className="w-full h-full object-cover" />
                     </div>
-                    <h5 className="font-semibold text-gray-900 mb-1">{formData.name}</h5>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{formData.description}</p>
-                    {formData.price && (
+                    <h5 className="font-semibold text-gray-900 mb-1">{name}</h5>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{description}</p>
+                    {price && (
                       <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        {formData.price} ETH
+                        {price} ETH
                       </p>
                     )}
                   </div>

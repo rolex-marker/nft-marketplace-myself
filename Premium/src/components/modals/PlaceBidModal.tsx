@@ -7,7 +7,7 @@ interface PlaceBidModalProps {
   onClose: () => void;
   currentBid: number;
   nftName: string;
-  onPlaceBid: (amount: number) => void;
+  handlePlaceBid: (amount: number) => void;
 }
 
 const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
@@ -15,7 +15,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
   onClose,
   currentBid,
   nftName,
-  onPlaceBid
+  handlePlaceBid
 }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -31,14 +31,11 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
     }
 
     setIsProcessing(true);
+    handlePlaceBid(amount);
+    setIsProcessing(false);
     
     // Simulate blockchain transaction
-    setTimeout(() => {
-      onPlaceBid(amount);
-      setIsProcessing(false);
-      setBidAmount('');
-      onClose();
-    }, 2000);
+    
   };
 
   return (
@@ -94,7 +91,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Minimum Bid</span>
-                    <span className="font-semibold text-purple-600">{minBid.toFixed(2)} ETH</span>
+                    <span className="font-semibold text-purple-600">{minBid} ETH</span>
                   </div>
                 </div>
 
@@ -110,7 +107,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
                       min={minBid}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      placeholder={`Min ${minBid.toFixed(2)} ETH`}
+                      placeholder={`Min ${minBid} ETH`}
                       required
                       disabled={isProcessing}
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none text-lg font-semibold disabled:bg-gray-50 disabled:cursor-not-allowed"
