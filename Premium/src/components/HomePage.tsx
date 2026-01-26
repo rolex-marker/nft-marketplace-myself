@@ -8,6 +8,7 @@ import NFTCard from './NFTCard';
 import { mockNFTs, topSellers, shortenAddress } from '../mockData';
 
 import './HomePage.css';
+import Loading from './loading/Loading';
 
 const HomePage = ({ marketplace, nft, account }) => {
   const trendingNFTs = mockNFTs.filter(nft => nft.status === 'active').slice(0, 4);
@@ -18,12 +19,12 @@ const HomePage = ({ marketplace, nft, account }) => {
     const [topSellers, setTopSellers] = useState([]);
     const [trendingitems, setTrendingitems] = useState([])
     const [auctionitems, setAuctionitems] = useState([])
-    const loadMarketplaceItems = useCallback(async () => {
-     
+
+
+    const loadMarketplaceItems = useCallback(async () => { 
       // Load all unsold items
       const itemCount = await marketplace.itemCount();
       let items = []
-      
       for (let i = 1; i <= itemCount; i++) {
          
         const item = await marketplace.items(i)
@@ -76,9 +77,7 @@ const HomePage = ({ marketplace, nft, account }) => {
       loadMarketplaceItems()
     }, [loadMarketplaceItems])
     if (loading) return (
-      <main>
-        <h1>LoadingHomepage</h1>
-      </main>
+      <Loading content="Loading Homepage... Pleasee Wait"/>
     )
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">

@@ -117,6 +117,12 @@
 .navbar-menu_container-links-sign{
   display: none;
 }
+
+.nav-connect_box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 @media screen and (max-width:1050px) {
   .navbar-links_container{
     display: none;
@@ -155,18 +161,25 @@
 
  .nav-avatar_information {
   position: relative;
+  margin-left: 15px;
+  text-align: center;
  }
 
  .nav-avatar {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
  }
 
  .nav-username {
   position: absolute;
-  color : rgb(105, 236, 144);
-  font-size: 15px;
-  top: 42px;
-  left: 8px;
+  width: 63px;
+  background-color: rgb(8, 189, 62);
+  color : white;
+  font-size: 13px;
+  border-radius: 20%;
+  top: 50px;
+  left: 4px;
+
+  text-align: center;
  }

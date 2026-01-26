@@ -21,6 +21,7 @@ import PlaceBidModal from './modals/PlaceBidModal';
 import MakeOfferModal from './modals/MakeOfferModal';
 import Toast, { ToastType } from './Toast';
 import useCountdown from "./api/useCountdown";
+import Loading from './loading/Loading';
 
 
 // types.ts (or top of file)
@@ -380,7 +381,10 @@ const finalizeAuction = async () => {
   
 
   
-  if (loading || !item || isofferLoading) return <h2>Loading item...</h2>;
+  if (loading || !item || isofferLoading) return <Loading content="Loading Content... Plaese Wait" />;
+  if (account === null) return (
+      <Loading content="Connect your Wallet" />
+    )
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back Button */}
@@ -544,7 +548,7 @@ const finalizeAuction = async () => {
               )}
 
               {/* Action Buttons */}
-              {item.sold === false &&  (
+              {item.sold === false &&  account !== null &&(
                 <div className="grid grid-cols-1 gap-3">
                   
                    {item.isAuction === false && item.seller !== account && (<button

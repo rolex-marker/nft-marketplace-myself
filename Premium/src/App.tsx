@@ -19,6 +19,7 @@ import MarketplaceAbi from './contractsData/Marketplace.json';
 import MarketplaceAddress from './contractsData/Marketplace-address.json';
 import NFTAbi from './contractsData/NFT.json';
 import NFTAddress from './contractsData/NFT-address.json';
+import Loading from './components/loading/Loading';
 
 function App() {
   //real rolex-marker code
@@ -31,6 +32,25 @@ function App() {
       bio: "",
       avatar: "",
     });
+
+    const firstLoadingData = async () => {  
+      if (!window.ethereum) {
+        alert('Install MetaMask');
+        return;
+      }
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+  
+          console.log('Get singer sucssess singer Address:', address);
+          loadContracts(signer); 
+      } catch (error) {
+       console.error('First Loading Data Error:', error);
+      }
+
+    }
   
     const loginWithMetaMask = async () => {
       if (!window.ethereum) {
@@ -103,9 +123,13 @@ function App() {
         }
       });
     }
-  
+   
+    const disConnectWallet = () => {
+      setAccount(null);
+    }
     
     useEffect(() => {
+      firstLoadingData();
       if (window.ethereum) {
         window.ethereum.on('chainChanged', () => window.location.reload());
         window.ethereum.on('accountsChanged', () => window.location.reload());
@@ -117,12 +141,10 @@ function App() {
     <WalletProvider>
       <Router>
         <div className="min-h-screen bg-white">
-          <Header loginWithMetaMask={loginWithMetaMask} account={account} form={form}/>
+          <Header loginWithMetaMask={loginWithMetaMask} disConnectWallet={disConnectWallet} account={account} form={form}/>
           <div>
             {loading ? (
-                      <main>
-                        <h1>LoadingApp</h1>
-                      </main>
+                      <Loading content="Loading App... Please Wait" />
                     ) : (
           <Routes>
             <Route path="/" element={<HomePage marketplace={marketplace} nft={nft} account={account}/>} />

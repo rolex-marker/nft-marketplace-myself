@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Upload, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
+import Loading from './loading/Loading';
 
 interface CreateNFTPageProps {
   marketplace: any
@@ -163,6 +164,10 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
     createNFT();
     // Simulate minting process
   };
+
+  if (account === null) return (
+      <Loading content="Connect your Wallet" />
+    )
 
   return (
     <div className="min-h-screen bg-gray-50">

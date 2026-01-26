@@ -13,8 +13,8 @@ const WalletConnectModal: React.FC<WalletConnectModalProps> = ({ loginWithMetaMa
   const { connectWallet } = useWallet();
 
   const handleConnect = () => {
-    loginWithMetaMask;
-    connectWallet();
+    loginWithMetaMask();
+    // connectWallet();
     onClose();
   };
 

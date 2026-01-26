@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Filter, Search, SlidersHorizontal } from 'lucide-react';
 import NFTCard from './NFTCard';
+import Loading from './loading/Loading';
 import { mockNFTs, NFT } from '../mockData';
 
 const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
@@ -59,9 +60,7 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
         loadMarketplaceItems()
       }, [loadMarketplaceItems])
       if (loading) return (
-        <main>
-          <h1>Loading Home</h1>
-        </main>
+        <Loading content="Loading Market... Please Wait"/>
       )
 
   const filteredNFTs = items

@@ -8,19 +8,24 @@ import WalletConnectModal from './modals/WalletConnectModal';
 
 import './Header.css';
 
-const Header: React.FC = ({ loginWithMetaMask, account, form }) => {
+const Header: React.FC = ({ loginWithMetaMask, disConnectWallet, account, form }) => {
   const location = useLocation();
   const { isConnected, address, disconnectWallet } = useWallet();
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Explore', path: '/marketplace' },
-    { name: 'Create', path: '/create' },
-    { name: 'My Items', path: '/my-items' },
-    { name: 'Profile', path: '/profile' }
-  ];
+  const navItems = account
+  ? [
+      { name: 'Home', path: '/' },
+      { name: 'Explore', path: '/marketplace' },
+      { name: 'Create', path: '/create' },
+      { name: 'My Items', path: '/my-items' },
+      { name: 'Profile', path: '/profile' }
+    ]
+  : [
+      { name: 'Home', path: '/' },
+      { name: 'Explore', path: '/marketplace' }
+    ];
 
   return (
     <>
@@ -57,23 +62,26 @@ const Header: React.FC = ({ loginWithMetaMask, account, form }) => {
             {/* Wallet Connect Button */}
             <div className="flex items-center space-x-4">
               {account ? (
-                // <button
-                //   onClick={disconnectWallet}
-                //   className="hidden md:flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all"
-                // >
-                //   <Wallet className="w-4 h-4" />
-                //   <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
-                // </button>
+                <div className='nav-connect_box'>
+                <button
+                  onClick={() => disConnectWallet()}
+                  className="hidden md:flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
+                </button>
                 <Link to="/profileedit">
                   <div className="nav-avatar_information">
                   <img className='nav-avatar' src={form.avatar} alt="people"/>
-                   {/* <span className='nav-username'> {form.username}</span> */}
-                   <span className='nav-username'> {account.slice(2, 6)}...{account.slice(-4)}</span>
+                   <span className='nav-username'> {form.username}</span>
+                   
                   </div>
                   </Link>
+                  </div>
               ) : (
                 <button
-                  onClick={loginWithMetaMask}
+                  onClick={() => setShowWalletModal(true)}
+                  // onClick={() => loginWithMetaMask()}
                   className="hidden md:flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
                   <Wallet className="w-4 h-4" />
@@ -106,7 +114,8 @@ const Header: React.FC = ({ loginWithMetaMask, account, form }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
+                    // onClick={() => setMobileMenuOpen(false)}
+                     onClick={() => loginWithMetaMask()}
                     className={`block px-4 py-3 rounded-lg transition-all ${
                       location.pathname === item.path
                         ? 'bg-gray-900 text-white'

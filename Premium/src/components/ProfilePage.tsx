@@ -7,6 +7,7 @@ import { mockNFTs, mockUser, shortenAddress } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 import './ProfilePage.css';
+import Loading from './loading/Loading';
 
 interface ProfilePageProps {
   marketplace: any
@@ -151,7 +152,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) 
         }})
     }, [token]);
 
-    if (loading) return (<main><h1>Loading myItems...</h1></main>);
+    if (loading) return (<Loading content="Loading ProfilePage... Please Wait" />);
+    if (account === null) return (
+      <Loading content="Connect your Wallet" />
+    )
 
   return (
     <div className="min-h-screen bg-gray-50">

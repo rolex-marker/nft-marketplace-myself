@@ -6,6 +6,7 @@ import NFTCard from './NFTCard';
 import { mockNFTs } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
+import Loading from './loading/Loading';
 
 interface MyListedItemsPageProps {
   marketplace: any
@@ -225,7 +226,10 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
     { id: 'ended' as const, label: 'Ended', count: endedNFTs.length, icon: XCircle }
   ];
 
-  if (loading) return (<main><h1>Loading myItems...</h1></main>);
+  if (loading) return (<Loading content="Loading MyListpage... Please Wait" />);
+  if (account === null) return (
+      <Loading content="Connect your Wallet" />
+    )
   
 
   return (
