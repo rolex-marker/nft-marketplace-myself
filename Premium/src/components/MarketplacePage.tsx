@@ -8,7 +8,7 @@ import { mockNFTs, NFT } from '../mockData';
 
 const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [saleTypeFilter, setSaleTypeFilter] = useState<'all' | false | true >('all');
+  const [saleTypeFilter, setSaleTypeFilter] = useState<'all' | false | true >(false);
   const [statusFilter, setStatusFilter] = useState<'all' | false | true >(false);
   const [sortBy, setSortBy] = useState<'recent' | 'lowPrice'| 'expensivePrice' >('recent');
   const [showFilters, setShowFilters] = useState(false);
@@ -234,7 +234,7 @@ const MarketplacePage: React.FC = ({ marketplace, nft, account }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <NFTCard nft={nft} />
+                    <NFTCard nft={nft} account={account} />
                   </motion.div>
                 ))}
               </div>

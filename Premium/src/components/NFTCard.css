@@ -12,6 +12,12 @@
     opacity: 0.9;
 }
 
+.nftcard-owerdisplay_button {
+     background-color: white;
+    color: rgb(240, 56, 43);
+    opacity: 0.9;
+}
+
 .bids-card_img{
   border-radius: 10px;
 }

@@ -7,6 +7,8 @@ import { mockNFTs } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 import Loading from './loading/Loading';
+import './Profile.css';
+import { useNavigate } from 'react-router-dom';
 
 interface MyListedItemsPageProps {
   marketplace: any
@@ -15,6 +17,7 @@ interface MyListedItemsPageProps {
 }
 
 const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft, account }) => {
+  const navigate = useNavigate();
   // const { address } = useWallet();
   const [loading, setLoading] = useState(true);
   const [totalListedItems, setTotalListedItems] = useState([]);
@@ -52,6 +55,9 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
         const owner = await nft.ownerOf(i.tokenId);
         const metadata = await fetch(uri).then(res => res.json());
         const totalPrice = await marketplace.getTotalPrice(i.itemId);
+
+        const data = await marketplace.getOffers(idx); 
+        const parsedOffer = data.length;
   
         const item = {
           totalPrice,
@@ -63,9 +69,11 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
           description: metadata.description,
           image: metadata.image,
           sold: i.sold,
-          isAuction: i.isAuction
+          isAuction: i.isAuction,
+          offernum: parsedOffer
         };
         items.push(item);
+        console.log('parsedOffer>>>', parsedOffer);
         // 🔵 My active listings
         if (i.seller.toLowerCase() === account.toLowerCase() && !i.sold) {
           listed.push(item);
@@ -104,10 +112,7 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
     // ---------- call the loader on mount ----------
     useEffect(() => {
       loadListedItems();
-    }, []);
-
-    
-  
+    }, []); 
 
   const cancelListing = async (itemId) => {
     if (!marketplace) return;
@@ -172,9 +177,9 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
           Number(acuDuration) * 60 // minutes → seconds
         )
   
-        await tx.wait()
-  
+        await tx.wait() 
         alert("Auction created 🎉")
+        navigate("/marketplace");
       } catch (err) {
         console.error(err)
         alert("Transaction failed (see console)")
@@ -209,6 +214,7 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
         await tx.wait()
   
         alert("Relisting NFT created 🎉")
+        navigate("/marketplace");
       } catch (err) {
         console.error(err)
         alert("Transaction failed (see console)")
@@ -321,7 +327,7 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
                 transition={{ delay: index * 0.05 }}
                 className="relative"
               >
-                <NFTCard nft={item} />
+                <NFTCard nft={item}/>
                 
                 {/* Action Buttons */}
                 {activeTab === 'active' && (
@@ -352,11 +358,17 @@ const MyListedItemsPage: React.FC<MyListedItemsPageProps> = ({ marketplace, nft,
                 )}
 
                 {/* Status Badge */}
-                {activeTab === 'sold' && (
+                {/* {activeTab === 'sold' && (
                   <div className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-green-600 text-white text-sm font-semibold shadow-lg">
                     ✓ Sold
                   </div>
-                )}
+                )} */}
+                {/* {activeTab === 'active' && (
+                  <div className="absolute top-3 left-4 px-3 py-1.5 rounded-full bg-green-600 text-white text-sm font-semibold shadow-lg">
+                    Offers
+                    <span className='mylistitem-active_badgeoffer'>{item.offernum}</span>
+                  </div>
+                )} */}
               </motion.div>
             ))}
           </div>

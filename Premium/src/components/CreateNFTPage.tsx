@@ -8,6 +8,7 @@ import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 import Loading from './loading/Loading';
 
+
 interface CreateNFTPageProps {
   marketplace: any
   nft: any
@@ -42,6 +43,7 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
   const [name, setName] = useState('');
   const [duration, setDuration] = useState("");
   const [description, setDescription] = useState('');
+  const [goExploPa, setGoExploPa] = useState(false)
   
 
   // Upload image to Pinata
@@ -110,18 +112,18 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
         if(formData.saleType === 'auction')
         {await mintThenAuction(uri)}
         else {await mintThenList(uri) }
-    
+        setToast({ 
+        message: 'NFT minted successfully! Redirecting to marketplace...', 
+        type: 'success', 
+        visible: true 
+      });
+        navigate("/marketplace");
         } catch (error) {
           console.log("ipfs metadata upload error:", error)
         }  } catch (err) {
         console.error(err)
       } finally {
         setUploading(false);
-        setToast({ 
-        message: 'NFT minted successfully! Redirecting to marketplace...', 
-        type: 'success', 
-        visible: true 
-      });
       }
       }
     
@@ -169,6 +171,7 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
       <Loading content="Connect your Wallet" />
     )
 
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

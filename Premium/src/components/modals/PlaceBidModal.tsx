@@ -33,7 +33,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
     setIsProcessing(true);
     handlePlaceBid(amount);
     setIsProcessing(false);
-    
+    onClose();
     // Simulate blockchain transaction
     
   };

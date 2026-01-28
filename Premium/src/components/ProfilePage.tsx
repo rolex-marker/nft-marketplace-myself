@@ -34,7 +34,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) 
   const [listed, setListed] = useState([]);
   const [myOwn, setMyOwn] = useState([]);
   const [form, setForm] = useState({});
-  const [transactions, setTransactions] = useState({});
+  const [transactions, setTransactions] = useState([]);
 
   const token = localStorage.getItem("token");
   
@@ -237,7 +237,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) 
 
                {/* Transaction History */}
             
-            <div className='page-transaction_container'>
+           {transactions.length !== 0 && ( <div className='page-transaction_container'>
             <div className="bg-white rounded-2xl p-6 border border-gray-200 ">
               <h3 className="font-semibold text-gray-900 mb-4">Transaction History</h3>
               <div className="space-y-4">
@@ -269,6 +269,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) 
               </div>
             </div>
             </div>
+            )
+            }
             
             
 

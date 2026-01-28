@@ -30,14 +30,13 @@ const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
     }
 
     setIsProcessing(true);
-    
-    // Simulate blockchain transaction
-    setTimeout(() => {
-      onMakeOffer(amount);
+    onMakeOffer(amount);
       setIsProcessing(false);
       setOfferAmount('');
       onClose();
-    }, 2000);
+    
+    // Simulate blockchain transaction
+   
   };
 
   return (
