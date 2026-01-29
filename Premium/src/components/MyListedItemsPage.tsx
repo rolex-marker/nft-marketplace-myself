@@ -7,7 +7,7 @@ import { mockNFTs } from '../mockData';
 import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 import Loading from './loading/Loading';
-import './Profile.css';
+import './profile.css';
 import { useNavigate } from 'react-router-dom';
 
 interface MyListedItemsPageProps {
