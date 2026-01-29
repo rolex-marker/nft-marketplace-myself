@@ -223,6 +223,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
           type: 'success', 
           visible: true 
         });
+        loadOffers();
       } catch(err) {
         console.error(err);
         alert("Offer failed: " + (err?.data?.message || err.message));

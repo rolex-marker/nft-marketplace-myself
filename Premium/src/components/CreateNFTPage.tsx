@@ -327,11 +327,11 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
                 <div className="relative">
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.0000001"
                     min="0"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="0.00"
+                    placeholder="0.0000000"
                     required
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none"
                   />

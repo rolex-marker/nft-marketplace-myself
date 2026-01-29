@@ -17,7 +17,6 @@ interface ProfilePageProps {
 
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) => {
-  const { address, isConnected } = useWallet();
   const [activeTab, setActiveTab] = useState<'created' | 'listed' | 'purchased' | 'offers'>('created');
   const [toast, setToast] = useState<{ message: string; type: ToastType; visible: boolean }>({
     message: '',
@@ -202,7 +201,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ marketplace, nft, account }) 
                     <Copy className="w-4 h-4 text-white" />
                   </button>
                   <a
-                    href={`https://etherscan.io/address/${address}`}
+                    href={`https://etherscan.io/address/${account}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all"
