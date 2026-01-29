@@ -8,6 +8,7 @@ import { useWallet } from '../WalletContext';
 import Toast, { ToastType } from './Toast';
 import Loading from './loading/Loading';
 
+
 interface CreateNFTPageProps {
   marketplace: any
   nft: any
@@ -42,6 +43,7 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
   const [name, setName] = useState('');
   const [duration, setDuration] = useState("");
   const [description, setDescription] = useState('');
+  const [goExploPa, setGoExploPa] = useState(false)
   
 
   // Upload image to Pinata
@@ -110,18 +112,18 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
         if(formData.saleType === 'auction')
         {await mintThenAuction(uri)}
         else {await mintThenList(uri) }
-    
+        setToast({ 
+        message: 'NFT minted successfully! Redirecting to marketplace...', 
+        type: 'success', 
+        visible: true 
+      });
+        navigate("/marketplace");
         } catch (error) {
           console.log("ipfs metadata upload error:", error)
         }  } catch (err) {
         console.error(err)
       } finally {
         setUploading(false);
-        setToast({ 
-        message: 'NFT minted successfully! Redirecting to marketplace...', 
-        type: 'success', 
-        visible: true 
-      });
       }
       }
     
@@ -169,6 +171,7 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
       <Loading content="Connect your Wallet" />
     )
 
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -324,11 +327,11 @@ const CreateNFTPage: React.FC<CreateNFTPageProps> = ({ marketplace, nft, account
                 <div className="relative">
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.0000001"
                     min="0"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="0.00"
+                    placeholder="0.0000000"
                     required
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none"
                   />

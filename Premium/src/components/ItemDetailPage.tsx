@@ -12,7 +12,9 @@ import {
   Heart, 
   Share2,
   CheckCircle,
+  Loader2,
   ArrowLeft,
+  ImageIcon,
   ExternalLink
 } from 'lucide-react';
 import { mockNFTs, mockOffers, mockTransactions, shortenAddress } from '../mockData';
@@ -22,6 +24,7 @@ import MakeOfferModal from './modals/MakeOfferModal';
 import Toast, { ToastType } from './Toast';
 import useCountdown from "./api/useCountdown";
 import Loading from './loading/Loading';
+import { useNavigate } from 'react-router-dom';
 
 
 // types.ts (or top of file)
@@ -70,7 +73,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
   const [loading, setLoading] = useState<boolean>(true);
   const [item, setItem] = useState<BlockchainItem | null>(null);
   const [seller, setSeller] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  
   const [isofferLoading, setIsofferLoading] = useState<boolean>(false);
   
   const [endTime, setEndTime] = useState<number>(0);
@@ -78,8 +81,11 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
   const [auctionEnded, setAuctionEnded] = useState<boolean>(false);
   const [isOwner, setIsOwner] = useState<boolean>(false);
   const [isHighestBidder, setIsHighestBidder] = useState<boolean>(false);
-  const [highestBidFormatted, setHighestBidFormatted] = useState();
+  const [highestBidFormatted, setHighestBidFormatted] = useState(0);
   const [priceFormatted, setPriceFormatted] = useState();
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [ofrBtnLoading, setOfrBtnLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const [offers, setOffers] = useState([]);
     // Load offers for this item
@@ -111,6 +117,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
     // Accept offer
     const acceptOffer = async (index) => {
       if (!marketplace) return;
+      setButtonLoading(true);
       try {
         const tx = await marketplace.acceptOffer(item?.itemId, index);
         const receipt = await tx.wait();
@@ -133,9 +140,13 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
           console.log("Offer transaction recorded in backend ✅");
         // reloadItems(); // Refresh items
         loadOffers();
+        setButtonLoading(false);
+        setToast({ message: 'Offer accept successful!', type: 'success', visible: true });
+        navigate("/marketplace");
       } catch (err) {
         console.error(err);
         alert("Failed to accept offer: " + (err?.data?.message || err.message));
+      } finally {
       }
     };
   
@@ -145,9 +156,9 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
   
 
   const phurchase = async () => {
-  if (isSubmitting) return;
+  if (buttonLoading) return;
 
-  setIsSubmitting(true);
+  setButtonLoading(true);
   try {
     const totalPrice = await marketplace.getTotalPrice(item?.itemId);
 
@@ -180,21 +191,27 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
       }
     );
 
-    setToast({ message: 'Purchase successful! NFT transferred to your wallet.', type: 'success', visible: true });
+     setToast({ 
+      message: 'Purchase successful! NFT transferred to your wallet.', 
+      type: 'success', 
+      visible: true });
+     
 
   } catch (err) {
     console.error(err);
     alert("Purchase failed: " + (err?.data?.message || err.message));
   } finally {
-    setIsSubmitting(false);
+    setButtonLoading(false);
+     navigate("/my-items");
   }
   };
 
   const makeOffer = async ( mount: number) => {
       if (!marketplace || !item) return;
+      if(ofrBtnLoading) return;
      
       let amount = mount.toString();
-      setIsSubmitting(true);
+      setOfrBtnLoading(true);
       try {
         await (await marketplace.makeOffer(item.itemId, {
           value: ethers.utils.parseEther(amount)
@@ -206,11 +223,12 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
           type: 'success', 
           visible: true 
         });
+        loadOffers();
       } catch(err) {
         console.error(err);
         alert("Offer failed: " + (err?.data?.message || err.message));
       } finally {
-        setIsSubmitting(false);
+        setOfrBtnLoading(false);
       }
     };
   
@@ -282,21 +300,22 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({ marketplace, nft, accou
 
 useEffect(() => {
     loadItem();
-  }, []);
+  }, [highestBidFormatted]);
 
 //acution section
 const placeBid = async (mount: number) => {
    if (!marketplace || !item) return;
-    if (isSubmitting) return;
+    if (buttonLoading) return;
 
     let amount = mount.toString();
     
-    setIsSubmitting(true);
+    setButtonLoading(true);
     try {
       const tx = await marketplace.placeBid(item.itemId, {
         value: ethers.utils.parseEther(amount),
       });
       await tx.wait();
+      setHighestBidFormatted(Number(ethers.utils.parseEther(amount)));
       setToast({ 
       message: `Bid of ${amount} ETH placed successfully!`, 
       type: 'success', 
@@ -306,14 +325,15 @@ const placeBid = async (mount: number) => {
       console.error(err);
       alert("Bid failed: " + (err?.message || err));
     } finally {
-      setIsSubmitting(false);
+      setButtonLoading(false);
+      
     }
   };
 
 const finalizeAuction = async () => {
-    if (isSubmitting) return;
+    if (buttonLoading) return;
 
-    setIsSubmitting(true);
+    setButtonLoading(true);
     try {
       const tx = await marketplace.finalizeAuction(item?.itemId);
       const receipt = await tx.wait();
@@ -338,11 +358,18 @@ const finalizeAuction = async () => {
         );
         console.log("Auction transaction recorded ✅");
       }
+      setToast({ 
+      message: 'Auction Ended successfully!, NFT is transfered to Highest bidder', 
+      type: 'success', 
+      visible: true 
+    });
+    
     } catch (err) {
       console.error("Auction finalization failed:", err);
       alert("Auction finalization failed: " + (err?.message || err));
     } finally {
-      setIsSubmitting(false);
+      setButtonLoading(false);
+      
     }
   };
 
@@ -365,13 +392,7 @@ const finalizeAuction = async () => {
     makeOffer(amount);
   };
 
-  const handleAcceptOffer = (offerId: string) => {
-    setToast({ 
-      message: 'Offer accepted! Transaction processing...', 
-      type: 'success', 
-      visible: true 
-    });
-  };
+  
 
   useEffect(() => {
       loadOffers();
@@ -523,7 +544,14 @@ const finalizeAuction = async () => {
                   <p className="text-sm text-gray-600 mb-2">Origin Bid</p>
                   <div className="flex items-baseline space-x-2 mb-4">
                     <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      {highestBidFormatted ?  ethers.utils.formatEther(item.totalPrice) : highestBidFormatted }
+                      {ethers.utils.formatEther(item.totalPrice)}
+                    </span>
+                    <span className="text-xl text-gray-600">ETH</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Highest Bid</p>
+                  <div className="flex items-baseline space-x-2 mb-4">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      {highestBidFormatted}
                     </span>
                     <span className="text-xl text-gray-600">ETH</span>
                   </div>
@@ -551,12 +579,24 @@ const finalizeAuction = async () => {
               {item.sold === false &&  account !== null &&(
                 <div className="grid grid-cols-1 gap-3">
                   
-                   {item.isAuction === false && item.seller !== account && (<button
+                   {item.isAuction === false && item.seller !== account && (
+                    <button
+                      disabled={buttonLoading}
                       onClick={handleBuyNow}
                       className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
                     >
-                      <ShoppingCart className="w-5 h-5" />
-                      <span>Buy Now</span>
+                      
+                      {buttonLoading ? (
+                                        <>
+                                          <Loader2 className="w-5 h-5 animate-spin" />
+                                          <span>Buying...</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ShoppingCart className="w-5 h-5" />
+                                           <span>Buy Now</span>
+                                        </>
+                                      )}
                     </button>)}
                   
                   {item.isAuction === true && (
@@ -564,22 +604,44 @@ const finalizeAuction = async () => {
                     <div>
                      {time != "AUC END" && !isOwner && (
                     <button
+                      disabled={buttonLoading}
                       onClick={() => setShowBidModal(true)}
                       className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
                     >
-                      <Gavel className="w-5 h-5" />
-                      <span>Place Bid</span>
+                     
+                      {buttonLoading ? (
+                                        <>
+                                          <Loader2 className="w-5 h-5 animate-spin" />
+                                          <span>Place Bidding</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Gavel className="w-5 h-5" />
+                                          <span>Place Bid</span>
+                                        </>
+                                      )}
                     </button>
                     )}
                     </div>
                     <div>
                      {time === "AUC END" && (
                     <button
+                      disabled={buttonLoading}
                       onClick={() => finalizeAuction()}
                       className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all"
                     >
-                      <Gavel className="w-5 h-5" />
-                      <span>Finalize Auction</span>
+                      
+                      {buttonLoading ? (
+                                        <>
+                                          <Loader2 className="w-5 h-5 animate-spin" />
+                                          <span>Finalizing Auction...</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Gavel className="w-5 h-5" />
+                                         <span>Finalize Auction</span>
+                                        </>
+                                      )}
                     </button>
                     )}
                     </div>
@@ -587,10 +649,21 @@ const finalizeAuction = async () => {
                   )}
                   {item.isAuction === false && item.seller !== account &&(<button
                     onClick={() => setShowOfferModal(true)}
+                    disabled={ofrBtnLoading}
                     className="flex items-center justify-center space-x-2 px-6 py-4 rounded-xl border-2 border-gray-900 text-gray-900 font-semibold hover:bg-gray-900 hover:text-white transition-all"
                   >
-                    <Tag className="w-5 h-5" />
-                    <span>Make Offer</span>
+                   
+                    {ofrBtnLoading ? (
+                                      <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Make Offering...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                       <Tag className="w-5 h-5" />
+                                       <span>Make Offer</span>
+                                      </>
+                                    )}
                   </button>)}
                 </div>
               )}
@@ -632,10 +705,11 @@ const finalizeAuction = async () => {
                       </div>
                       { !offer.accepted  && item.seller === account && item.sold === false &&(
                         <button
+                          disabled={buttonLoading}
                           onClick={() => acceptOffer(idx)}
                           className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium hover:shadow-lg transition-all"
-                        >
-                          Accept
+                        >   
+                    <span>accept</span>
                         </button>
                       )}
                       {offer.accepted == true && (
@@ -650,37 +724,7 @@ const finalizeAuction = async () => {
               </div>
             )}
 
-            {/* Transaction History */}
-            {/* <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4">Transaction History</h3>
-              <div className="space-y-4">
-                {mockTransactions.map((tx) => (
-                  <div key={tx.id} className="flex items-start space-x-4 pb-4 border-b border-gray-100 last:border-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 capitalize">{tx.type}</p>
-                      <p className="text-sm text-gray-600">
-                        {tx.from && `From ${shortenAddress(tx.from)}`}
-                        {tx.to && ` to ${shortenAddress(tx.to)}`}
-                      </p>
-                      {tx.amount && (
-                        <p className="text-sm font-semibold text-purple-600">{tx.amount} ETH</p>
-                      )}
-                    </div>
-                    <a
-                      href={`https://etherscan.io/tx/${tx.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div> */}
+           
           </div>
         </div>
       </div>
@@ -688,7 +732,7 @@ const finalizeAuction = async () => {
       <PlaceBidModal
         isOpen={showBidModal}
         onClose={() => setShowBidModal(false)}
-        currentBid={ethers.utils.formatEther(item.highestBid) || 0}
+        currentBid={highestBidFormatted}
         nftName={item.name}
         handlePlaceBid={handlePlaceBid}
       />

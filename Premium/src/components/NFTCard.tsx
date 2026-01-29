@@ -10,6 +10,7 @@ import './NFTCard.css';
 // import useCountdown from '../components/functions/useCountdown'
 interface NFTCardProps {
   nft: NFT;
+  account: string;
 }
 
 const formatTime = (seconds: number): string => {
@@ -25,7 +26,7 @@ const formatTime = (seconds: number): string => {
 }
 
 
-const NFTCard: React.FC<NFTCardProps> = ({ nft }) => {
+const NFTCard: React.FC<NFTCardProps> = ({ nft, account }) => {
   const [creator, setCreators] = useState({});
   const [loading, setLoading] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("notime")
@@ -94,8 +95,18 @@ useEffect(() => {
           )}
           {/* Status Badge */}
           {nft.sold !== true && (
-            <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-gray-700/90 backdrop-blur-sm text-red text-sm font-medium nftcard-availdisplay_button">
+            <div>
+              { nft.seller === account ? <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-gray-700/90 backdrop-blur-sm text-red text-sm font-medium nftcard-owerdisplay_button">
+              Your owns
+            </div> :  <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-gray-700/90 backdrop-blur-sm text-red text-sm font-medium nftcard-availdisplay_button">
               Available
+            </div>}
+            
+           {nft.offernum>0 && (<div className="absolute top-3 left-4 px-3 py-1.5 rounded-full bg-green-600 text-white text-sm font-semibold shadow-lg">
+                    Offers
+                    <span className='mylistitem-active_badgeoffer'>{nft.offernum}</span>
+                  </div>)
+                  } 
             </div>
           )}
           
@@ -196,7 +207,7 @@ useEffect(() => {
                       className="small-avatar"
                     />
                     <p className="main-content_p">
-                      Creator:
+                      Owner:
                       <span>
                         {creator?.username ||
                           nft.seller.slice(0, 6) + "..." +

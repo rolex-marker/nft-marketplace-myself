@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import axios from 'axios';
+ 
 
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -20,6 +21,7 @@ import MarketplaceAddress from './contractsData/Marketplace-address.json';
 import NFTAbi from './contractsData/NFT.json';
 import NFTAddress from './contractsData/NFT-address.json';
 import Loading from './components/loading/Loading';
+import {Footer} from './components/Footer';
 
 function App() {
   //real rolex-marker code
@@ -126,6 +128,7 @@ function App() {
    
     const disConnectWallet = () => {
       setAccount(null);
+      localStorage.removeItem('token');
     }
     
     useEffect(() => {
@@ -157,6 +160,7 @@ function App() {
           </Routes>
           )}
         </div>
+        <Footer />
         </div>
       </Router>
     </WalletProvider>

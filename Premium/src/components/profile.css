@@ -97,3 +97,15 @@
     padding-bottom: 1rem;
   }
 }
+
+.mylistitem-active_badgeoffer {
+  position: absolute;
+  width: 17px;
+  border-radius: 50%;
+  background-color: rgb(39, 39, 214);
+  color: white;
+  font-size: 12px;
+  bottom: -2px;
+  right: -3px;
+  text-align: center;
+}

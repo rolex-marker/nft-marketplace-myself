@@ -30,14 +30,13 @@ const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
     }
 
     setIsProcessing(true);
-    
-    // Simulate blockchain transaction
-    setTimeout(() => {
-      onMakeOffer(amount);
+    onMakeOffer(amount);
       setIsProcessing(false);
       setOfferAmount('');
       onClose();
-    }, 2000);
+    
+    // Simulate blockchain transaction
+   
   };
 
   return (
@@ -103,8 +102,8 @@ const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
                   <div className="relative">
                     <input
                       type="number"
-                      step="0.01"
-                      min="0.01"
+                      step="0.0000001"
+                      min="0.0000001"
                       value={offerAmount}
                       onChange={(e) => setOfferAmount(e.target.value)}
                       placeholder="Enter your offer"

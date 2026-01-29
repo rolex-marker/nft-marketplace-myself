@@ -33,7 +33,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
     setIsProcessing(true);
     handlePlaceBid(amount);
     setIsProcessing(false);
-    
+    onClose();
     // Simulate blockchain transaction
     
   };
@@ -103,7 +103,7 @@ const PlaceBidModal: React.FC<PlaceBidModalProps> = ({
                   <div className="relative">
                     <input
                       type="number"
-                      step="0.01"
+                      step="0.0000001"
                       min={minBid}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
